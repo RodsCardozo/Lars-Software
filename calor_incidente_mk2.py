@@ -1,3 +1,24 @@
+def posi_ori(posi, ori):
+      orb_sat = posi
+      xyz = ori
+      K = int(len(xyz) / len(orb_sat))
+      print(K)
+      A = []
+      for i in range(0, len(orb_sat), 1):
+            x = orb_sat.iloc[i, 0]
+            y = orb_sat.iloc[i, 1]
+            z = orb_sat.iloc[i, 2]
+            j = i*K
+            psi = xyz.iloc[j, 0]
+            teta = xyz.iloc[j, 1]
+            phi = xyz.iloc[j, 2]
+
+            A.append([x, y, z, psi, teta, phi])
+      posi_ori = pd.DataFrame(A, columns=['X', 'Y', 'Z', 'Psi', 'Teta', 'Phi'])
+      return (posi_ori)
+
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import euler_angle
@@ -54,19 +75,14 @@ ori_xyz = np.zeros((len(orb_sat), 3))
 K = len(xyz) / len(orb_sat)
 print(K)
 
-A = []
-for j in range(0, len(xyz), int(K)):
-      for i in range(0, len(orb_sat), 1):
-            x = orb_sat.iloc[i, 0]
-            y = orb_sat.iloc[i, 1]
-            z = orb_sat.iloc[i, 2]
-            psi = xyz.iloc[j, 0]
-            teta = xyz.iloc[j, 1]
-            phi = xyz.iloc[j, 2]
 
-      A.append([x, y, z, psi, teta, phi])
-posi_ori = pd.DataFrame(A, columns=['X', 'Y', 'Z', 'Psi', 'Teta', 'Phi'])
 
+
+Posi_ori = posi_ori(orb_sat, xyz)
+print(Posi_ori)
+
+
+'''
 Vs = np.array([1, 0, 0])
 
 Ai = [a * c,
@@ -88,4 +104,4 @@ divisao = int(500)
 vet_terra = terra.terra(Raio_terra, divisao)
 As = sup_terra.sup_terra(Raio_terra, divisao)
 concat_terra = pd.concat([vet_terra, As], axis=1)
-
+'''
