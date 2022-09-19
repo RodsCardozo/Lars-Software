@@ -32,7 +32,7 @@ def terra(Raio_terra, divisao):
         R.append(np.sqrt(x[i]**2 + y[i]**2 + z[i]**2))
     posicao = []
     for i in range(0, len(x), 1):
-        posicao.append([x, y, z])
+        posicao.append(np.array([x, y, z]))
     Terra = pd.DataFrame(posicao, columns=['Terra_X', 'Terra_Y', 'Terra_Z'])
     Terra['Terra_R'] = (Terra['Terra_X']**2 + Terra['Terra_Y']**2 + Terra['Terra_Z']**2)**0.5
     return Terra
