@@ -122,7 +122,7 @@ def propagador_orbital(Semi_eixo, excentricidade, asce_direita, anomalia_verdade
         # print(del_t )
         Raan = Raan + RA_p * del_t
         arg_per = arg_per + arg_per_p * del_t
-        orbita.append([r_X, r_Y, r_Z])
+        orbita.append([r_X[i], r_Y[i], r_Z[i]])
     if plotagem == 1:
         from mpl_toolkits.mplot3d import Axes3D
 

@@ -28,8 +28,7 @@ def sup_terra(Raio_terra, divisao):
         for j in range(0, divi - 1, 1):
             t1 = alfa[1] - alfa[0]
             t2 = beta[1] - beta[0]
-            St.append((Rt ** 2) * (alfa[i] + t1 - alfa[i]) * (
-                    np.cos(beta[j]) - (np.cos(beta[j]) * np.cos(t2) - np.sin(beta[j]) * np.sin(t2))))
+            St.append(np.array((Rt ** 2) * (alfa[i] + t1 - alfa[i]) * (
+                    np.cos(beta[j]) - (np.cos(beta[j]) * np.cos(t2) - np.sin(beta[j]) * np.sin(t2)))))
     Sup_terra = pd.DataFrame(St, columns=['As'])
-
     return Sup_terra

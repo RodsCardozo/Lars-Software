@@ -127,7 +127,7 @@ def orientacao_quat(Ia, Ib, Ic, PSIP, TETAP, PHIP, Psi, Teta, Phi, Time_step):
 
     PTP = []
     for i in range(0,len(Psi1), 1):
-        PTP.append([Psi1, Teta1, Phi1])
+        PTP.append([Psi1[i], Teta1[i], Phi1[i]])
 
     Psi_teta_phi = pd.DataFrame(PTP, columns=['Psi', 'Teta', 'Phi'])
     return (Psi_teta_phi)

@@ -1,4 +1,3 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 import euler_angle
@@ -8,6 +7,7 @@ import periodo_orbital
 import propagador_orbital_mk3
 import sup_terra
 import pandas as pd
+
 m = float(3)  # massa do cubesat
 a = float(0.1)  # comprimento do sat
 b = float(0.1)  # largura do sat
@@ -50,10 +50,22 @@ orb_sat = propagador_orbital_mk3.propagador_orbital(rp, ecc, Raan, true_anomaly,
 
 xyz = orientacao_quat.orientacao_quat(Ia, Ib, Ic, PSIP, TETAP, PHIP, psi0, teta0, phi0, T_orbita)
 
-
 ori_xyz = np.zeros((len(orb_sat), 3))
 K = len(xyz) / len(orb_sat)
 print(K)
+
+A = []
+for j in range(0, len(xyz), int(K)):
+      for i in range(0, len(orb_sat), 1):
+            x = orb_sat.iloc[i, 0]
+            y = orb_sat.iloc[i, 1]
+            z = orb_sat.iloc[i, 2]
+            psi = xyz.iloc[j, 0]
+            teta = xyz.iloc[j, 1]
+            phi = xyz.iloc[j, 2]
+
+      A.append([x, y, z, psi, teta, phi])
+posi_ori = pd.DataFrame(A, columns=['X', 'Y', 'Z', 'Psi', 'Teta', 'Phi'])
 
 Vs = np.array([1, 0, 0])
 
@@ -75,61 +87,5 @@ divisao = int(500)
 
 vet_terra = terra.terra(Raio_terra, divisao)
 As = sup_terra.sup_terra(Raio_terra, divisao)
+concat_terra = pd.concat([vet_terra, As], axis=1)
 
-Terra = pd.concat([vet_terra,As], axis=1)
-print(Terra)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-rhok1 = []
-rhok2 = []
-rhok3 = []
-rhok4 = []
-rhok5 = []
-rhok6 = []
-for i in range(0, len(Posi_XYZ), 1):
-
-    PSI = np.arccos(np.dot(Posi_XYZ[i], Vs) / (np.linalg.norm(Posi_XYZ[i]) * np.linalg.norm(Vs)))
-    QSI = np.arcsin(Raio_terra / np.linalg.norm(Raio_terra))
-    A1 = rotacao_Euler_2(Ni[0], ori_xyz[i][0], ori_xyz[i][1], ori_xyz[i][2])
-    A2 = rotacao_Euler_2(Ni[1], ori_xyz[i][0], ori_xyz[i][1], ori_xyz[i][2])
-    A3 = rotacao_Euler_2(Ni[2], ori_xyz[i][0], ori_xyz[i][1], ori_xyz[i][2])
-    A4 = rotacao_Euler_2(Ni[3], ori_xyz[i][0], ori_xyz[i][1], ori_xyz[i][2])
-    A5 = rotacao_Euler_2(Ni[4], ori_xyz[i][0], ori_xyz[i][1], ori_xyz[i][2])
-    A6 = rotacao_Euler_2(Ni[5], ori_xyz[i][0], ori_xyz[i][1], ori_xyz[i][2])
-
-    if PSI + QSI < np.pi:
-
-        for k in range(0, len(Terra), 1):
-
-            rhok1.append(np.array(Posi_XYZ[i]) - np.array(Terra[k]) + np.array(A1))
-            rhok2.append(np.array(Posi_XYZ[i]) - np.array(Terra[k]) + np.array(A2))
-            rhok3.append(np.array(Posi_XYZ[i]) - np.array(Terra[k]) + np.array(A3))
-            rhok4.append(np.array(Posi_XYZ[i]) - np.array(Terra[k]) + np.array(A4))
-            rhok5.append(np.array(Posi_XYZ[i]) - np.array(Terra[k]) + np.array(A5))
-            rhok6.append(np.array(Posi_XYZ[i]) - np.array(Terra[k]) + np.array(A6))
-'''
