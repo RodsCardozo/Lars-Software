@@ -75,14 +75,8 @@ ori_xyz = np.zeros((len(orb_sat), 3))
 K = len(xyz) / len(orb_sat)
 print(K)
 
+Posicao_orientacao = posi_ori(orb_sat, xyz)
 
-
-
-Posi_ori = posi_ori(orb_sat, xyz)
-print(Posi_ori)
-
-
-'''
 Vs = np.array([1, 0, 0])
 
 Ai = [a * c,
@@ -99,6 +93,61 @@ Ni = [[1, 0, 0],
       [0, 0, -1],
       [0, 0, 1]]
 
+df1 = pd.DataFrame(Ni, columns=['x', 'y', 'z'])
+
+Posicao_orientacao = pd.concat([Posicao_orientacao, df1], axis=1)
+
+names = [['N1_X', 'N1_Y', 'N1_Z'],
+         ['N2_X', 'N2_Y', 'N2_Z'],
+         ['N3_X', 'N3_Y', 'N3_Z'],
+         ['N4_X', 'N4_Y', 'N4_Z'],
+         ['N5_X', 'N5_Y', 'N5_Z'],
+         ['N6_X', 'N6_Y', 'N6_Z']]
+R = []
+for j in range(0, len(Ni), 1):
+      R = []
+      for i in range(0, len(Posicao_orientacao), 1):
+            A = np.array([Posicao_orientacao.iloc[i][6],
+                          Posicao_orientacao.iloc[i][7],
+                          Posicao_orientacao.iloc[i][8]])
+
+            ra = Posicao_orientacao.iloc[i][3]
+            inc = Posicao_orientacao.iloc[i][4]
+            ome = Posicao_orientacao.iloc[i][5]
+            vetor = A
+            R1 = np.array([[np.cos(ra), np.sin(ra), 0],
+                           [-np.sin(ra), np.cos(ra), 0],
+                           [0, 0, 1]])
+
+            R2 = np.array([[1, 0, 0],
+                           [0, np.cos(inc), np.sin(inc)],
+                           [0, -np.sin(inc), np.cos(inc)]])
+
+            R3 = np.array([[np.cos(ome), np.sin(ome), 0],
+                           [-np.sin(ome), np.cos(ome), 0],
+                           [0, 0, 1]])
+            a = R2.dot(R1)
+            Tci = R3.dot(a)
+            A = (np.transpose(Tci).dot(vetor))
+            R1 = A[0]
+            R2 = A[1]
+            R3 = A[2]
+            R.append([R1, R2, R3])
+      df2 = pd.DataFrame(R, columns=[names[j]])
+      Posicao_orientacao = pd.concat([Posicao_orientacao, df2], axis=1)
+Posicao_orientacao.to_csv('posicao.csv',sep='\t')
+print(Posicao_orientacao)
+
+
+
+
+
+
+
+
+
+
+'''
 divisao = int(500)
 
 vet_terra = terra.terra(Raio_terra, divisao)

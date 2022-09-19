@@ -17,7 +17,7 @@ def rotacao_euler_2(VETOR, RA, INC, OME):
     import numpy as np
 
     """
-    VETOR = Vetor a ser transforado
+    VETOR = Vetor a ser transformado
     RA = Angulo PSI
     INC = Angulo TETA
     OME = Angulo PHI
@@ -46,6 +46,6 @@ def rotacao_euler_2(VETOR, RA, INC, OME):
     x = R[0]
     y = R[1]
     z = R[2]
-    Rxyz = np.array([x, y, z])
+    Rxyz = [x, y, z]
 
     return Rxyz
