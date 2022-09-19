@@ -1,6 +1,16 @@
 # Lars-Software
 Versao inicial do programa do laboratorio LARS
 
+'' IMPORTANTE ''
+
+Ter instalado:
+
+- numpy
+- plotly
+- matplotlbi
+- scipy
+- pandas
+
 Primeira versao.
 Calcula a radiação e a propagação de uma orbita.
 
