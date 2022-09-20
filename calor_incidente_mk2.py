@@ -126,7 +126,7 @@ for j in range(0, len(Ni), 1):
       R = []
       Posicao_orientacao = pd.concat([Posicao_orientacao, df2], axis=1)
 
-divisao = int(500)
+divisao = int(5)
 
 vet_terra = terra.terra(Raio_terra, divisao)
 As = sup_terra.sup_terra(Raio_terra, divisao)
@@ -156,6 +156,136 @@ Posicao_orientacao['rho5_Z'] = Posicao_orientacao['Z'] + Posicao_orientacao['N5_
 Posicao_orientacao['rho6_X'] = Posicao_orientacao['X'] + Posicao_orientacao['N6_X'] - Posicao_orientacao['Terra_X']
 Posicao_orientacao['rho6_Y'] = Posicao_orientacao['Y'] + Posicao_orientacao['N6_Y'] - Posicao_orientacao['Terra_Y']
 Posicao_orientacao['rho6_Z'] = Posicao_orientacao['Z'] + Posicao_orientacao['N6_Z'] - Posicao_orientacao['Terra_Z']
+vetor_posicao = np.transpose([Posicao_orientacao['X'].to_numpy(), Posicao_orientacao['Y'].to_numpy(), Posicao_orientacao['Z'].to_numpy()])
+
+Qs1 = []
+Qs2 = []
+Qs3 = []
+Qs3 = []
+Qs4 = []
+Qs5 = []
+Qs6 = []
+
+for i in range(0, len(vetor_posicao), 1):
+    PSI = np.arccos(np.dot(vetor_posicao[i], Vs) / (np.linalg.norm(vetor_posicao[i]) * np.linalg.norm(Vs)))
+    QSI = np.arcsin(Raio_terra / np.linalg.norm(vetor_posicao[i]))
+    if PSI + QSI < np.pi:
+
+        A1 = np.array([Posicao_orientacao.iloc[i][9], Posicao_orientacao.iloc[i][10], Posicao_orientacao.iloc[i][11]])
+        A2 = np.array([Posicao_orientacao.iloc[i][12], Posicao_orientacao.iloc[i][13], Posicao_orientacao.iloc[i][14]])
+        A3 = np.array([Posicao_orientacao.iloc[i][15], Posicao_orientacao.iloc[i][16], Posicao_orientacao.iloc[i][17]])
+        A4 = np.array([Posicao_orientacao.iloc[i][18], Posicao_orientacao.iloc[i][19], Posicao_orientacao.iloc[i][20]])
+        A5 = np.array([Posicao_orientacao.iloc[i][21], Posicao_orientacao.iloc[i][22], Posicao_orientacao.iloc[i][23]])
+        A6 = np.array([Posicao_orientacao.iloc[i][24], Posicao_orientacao.iloc[i][25], Posicao_orientacao.iloc[i][26]])
+
+        k1 = np.dot(A1, Vs)
+        k2 = np.dot(A2, Vs)
+        k3 = np.dot(A3, Vs)
+        k4 = np.dot(A4, Vs)
+        k5 = np.dot(A5, Vs)
+        k6 = np.dot(A6, Vs)
+
+        if k1 > 0:
+            qs1 = ai * Is * k1
+            Qs1.append(qs1)
+        else:
+            Qs1.append(0)
+        if k2 > 0:
+            qs2 = ai * Is * k2
+            Qs2.append(qs2)
+        else:
+            Qs2.append(0)
+
+        if k3 > 0:
+            qs3 = ai * Is * k3
+            Qs3.append(qs3)
+        else:
+            Qs3.append(0)
+        if k4 > 0:
+            qs4 = ai * Is * k4
+            Qs4.append(qs4)
+        else:
+            Qs4.append(0)
+        if k5 > 0:
+            qs5 = ai * Is * k5
+            Qs5.append(qs5)
+        else:
+            Qs5.append(0)
+        if k6 > 0:
+            qs6 = ai * Is * k6
+            Qs6.append(qs6)
+        else:
+            Qs6.append(0)
+
+    else:
+        Qs1.append(0)
+        Qs2.append(0)
+        Qs3.append(0)
+        Qs4.append(0)
+        Qs5.append(0)
+        Qs6.append(0)
+
+Qtotal = [[Qs1],
+          [Qs2],
+          [Qs3],
+          [Qs4],
+          [Qs5],
+          [Qs6]]
+
+
+T = np.linspace(0, len(vetor_posicao), len(vetor_posicao))
+plt.xlabel("Ponto da orbita")
+plt.ylabel("Calor incidente em cada face [W/m^2]")
+plt.plot(T, Qs1, color ='green', label='N1')
+plt.plot(T, Qs2, color = 'blue', label='N2')
+plt.plot(T, Qs3, color = 'cyan', label='N3')
+plt.plot(T, Qs4, color = 'yellow', label='N4')
+plt.plot(T, Qs5, color = 'red', label='N5')
+plt.plot(T, Qs6, color = 'magenta', label='N6')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+        for k in range(0, len(vet_terra), 1):
+
+            Terra = np.array([vet_terra.iloc[k][0], vet_terra.iloc[k][2], vet_terra.iloc[k][3]])
+            C_bek = np.dot(Vs, Terra[k]) / (np.linalg.norm(Vs) * np.linalg.norm(Terra[k]))
+            rhok1 = np.array([Posicao_orientacao.iloc[k][32], Posicao_orientacao.iloc[k][33], Posicao_orientacao.iloc[k][34]])
+            
+            if np.dot(rhok1, Terra[k]) > 0:
+    
+                C_aek1 = np.dot(rhok1, Terra[k]) / (np.linalg.norm(rhok1) * np.linalg.norm(Terra[k]))
+                C_aik1 = (np.dot(-rhok1, A1)) / (np.linalg.norm(rhok1) * np.linalg.norm(A1))
+    
+                if C_aik1 > 0 and C_aek1 > 0 and C_bek > 0:
+    
+                    Balb = float(1.0)
+    
+                    Halb1 = Halb1 + (As[k] * ((C_aek1 * C_bek * C_aik1) / (np.pi * np.linalg.norm(rhok1) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
+    
+                    Halb1 = Halb1 + (As[k] * ((C_aek1 * C_bek * C_aik1) / (np.pi * np.linalg.norm(rhok1) ** 2)) * Balb)
+
+
+'''
 
 
 
@@ -179,8 +309,4 @@ Posicao_orientacao['rho6_Z'] = Posicao_orientacao['Z'] + Posicao_orientacao['N6_
 
 
 
-
-
-
-
-#Posicao_orientacao.to_csv('posicao.csv',sep=',')
+Posicao_orientacao.to_csv('posicao.csv',sep=',')
