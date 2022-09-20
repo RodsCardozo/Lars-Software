@@ -17,8 +17,6 @@ def posi_ori(posi, ori):
       posi_ori = pd.DataFrame(A, columns=['X', 'Y', 'Z', 'Psi', 'Teta', 'Phi'])
       return (posi_ori)
 
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 import euler_angle
@@ -105,11 +103,11 @@ names = [['N1_X', 'N1_Y', 'N1_Z'],
          ['N6_X', 'N6_Y', 'N6_Z']]
 R = []
 for j in range(0, len(Ni), 1):
-      R = []
+
       for i in range(0, len(Posicao_orientacao), 1):
-            A = np.array([Posicao_orientacao.iloc[i][6],
-                          Posicao_orientacao.iloc[i][7],
-                          Posicao_orientacao.iloc[i][8]])
+            A = np.array([Posicao_orientacao.iloc[j][6],
+                          Posicao_orientacao.iloc[j][7],
+                          Posicao_orientacao.iloc[j][8]])
 
             ra = Posicao_orientacao.iloc[i][3]
             inc = Posicao_orientacao.iloc[i][4]
@@ -133,10 +131,12 @@ for j in range(0, len(Ni), 1):
             R2 = A[1]
             R3 = A[2]
             R.append([R1, R2, R3])
+
       df2 = pd.DataFrame(R, columns=[names[j]])
+      R = []
       Posicao_orientacao = pd.concat([Posicao_orientacao, df2], axis=1)
-Posicao_orientacao.to_csv('posicao.csv',sep='\t')
-print(Posicao_orientacao)
+Posicao_orientacao.to_csv('posicao.csv',sep=',')
+
 
 
 
