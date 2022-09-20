@@ -176,7 +176,7 @@ plt.plot(T, Qs5, color = 'red', label='N5')
 plt.plot(T, Qs6, color = 'magenta', label='N6')   
 '''
 
-divisao = int(500)
+divisao = int(5)
 Terra = terra.terra(Raio_terra, divisao)
 As = sup_terra.sup_terra(Raio_terra, divisao)
 x = []

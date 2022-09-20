@@ -53,14 +53,12 @@ ai = 1.0
 T_orbita = periodo_orbital.periodo_orbital(rp)
 passo = 10000
 gama = 0.3
-
 PSIP = 0.0
 TETAP = 0.0
 PHIP = (2 * np.pi) / T_orbita
 psi0 = Raan
 teta0 = inc
 phi0 = 0.0
-
 psi = []
 teta = []
 phi = []
@@ -74,27 +72,21 @@ K = len(xyz) / len(orb_sat)
 print(K)
 
 Posicao_orientacao = posi_ori(orb_sat, xyz)
-
 Vs = np.array([1, 0, 0])
-
 Ai = [a * c,
       b * c,
       a * c,
       b * c,
       a * b,
       a * b]
-
 Ni = [[1, 0, 0],
       [0, 1, 0],
       [-1, 0, 0],
       [0, -1, 0],
       [0, 0, -1],
       [0, 0, 1]]
-
 df1 = pd.DataFrame(Ni, columns=['x', 'y', 'z'])
-
 Posicao_orientacao = pd.concat([Posicao_orientacao, df1], axis=1)
-
 names = [['N1_X', 'N1_Y', 'N1_Z'],
          ['N2_X', 'N2_Y', 'N2_Z'],
          ['N3_X', 'N3_Y', 'N3_Z'],
@@ -103,7 +95,6 @@ names = [['N1_X', 'N1_Y', 'N1_Z'],
          ['N6_X', 'N6_Y', 'N6_Z']]
 R = []
 for j in range(0, len(Ni), 1):
-
       for i in range(0, len(Posicao_orientacao), 1):
             A = np.array([Posicao_orientacao.iloc[j][6],
                           Posicao_orientacao.iloc[j][7],
@@ -131,26 +122,65 @@ for j in range(0, len(Ni), 1):
             R2 = A[1]
             R3 = A[2]
             R.append([R1, R2, R3])
-
-      df2 = pd.DataFrame(R, columns=[names[j]])
+      df2 = pd.DataFrame(R, columns=names[j])
       R = []
       Posicao_orientacao = pd.concat([Posicao_orientacao, df2], axis=1)
-Posicao_orientacao.to_csv('posicao.csv',sep=',')
 
-'''batata'''
-
-
-
-
-
-
-
-
-
-'''
 divisao = int(500)
 
 vet_terra = terra.terra(Raio_terra, divisao)
 As = sup_terra.sup_terra(Raio_terra, divisao)
 concat_terra = pd.concat([vet_terra, As], axis=1)
-'''
+Posicao_orientacao = pd.concat([Posicao_orientacao, concat_terra], axis=1)
+
+Posicao_orientacao['rho1_X'] = Posicao_orientacao['X'] + Posicao_orientacao['N1_X'] - Posicao_orientacao['Terra_X']
+Posicao_orientacao['rho1_Y'] = Posicao_orientacao['Y'] + Posicao_orientacao['N1_Y'] - Posicao_orientacao['Terra_Y']
+Posicao_orientacao['rho1_Z'] = Posicao_orientacao['Z'] + Posicao_orientacao['N1_Z'] - Posicao_orientacao['Terra_Z']
+
+Posicao_orientacao['rho2_X'] = Posicao_orientacao['X'] + Posicao_orientacao['N2_X'] - Posicao_orientacao['Terra_X']
+Posicao_orientacao['rho2_Y'] = Posicao_orientacao['Y'] + Posicao_orientacao['N2_Y'] - Posicao_orientacao['Terra_Y']
+Posicao_orientacao['rho2_Z'] = Posicao_orientacao['Z'] + Posicao_orientacao['N2_Z'] - Posicao_orientacao['Terra_Z']
+
+Posicao_orientacao['rho3_X'] = Posicao_orientacao['X'] + Posicao_orientacao['N3_X'] - Posicao_orientacao['Terra_X']
+Posicao_orientacao['rho3_Y'] = Posicao_orientacao['Y'] + Posicao_orientacao['N3_Y'] - Posicao_orientacao['Terra_Y']
+Posicao_orientacao['rho3_Z'] = Posicao_orientacao['Z'] + Posicao_orientacao['N3_Z'] - Posicao_orientacao['Terra_Z']
+
+Posicao_orientacao['rho4_X'] = Posicao_orientacao['X'] + Posicao_orientacao['N4_X'] - Posicao_orientacao['Terra_X']
+Posicao_orientacao['rho4_Y'] = Posicao_orientacao['Y'] + Posicao_orientacao['N4_Y'] - Posicao_orientacao['Terra_Y']
+Posicao_orientacao['rho4_Z'] = Posicao_orientacao['Z'] + Posicao_orientacao['N4_Z'] - Posicao_orientacao['Terra_Z']
+
+Posicao_orientacao['rho5_X'] = Posicao_orientacao['X'] + Posicao_orientacao['N5_X'] - Posicao_orientacao['Terra_X']
+Posicao_orientacao['rho5_Y'] = Posicao_orientacao['Y'] + Posicao_orientacao['N5_Y'] - Posicao_orientacao['Terra_Y']
+Posicao_orientacao['rho5_Z'] = Posicao_orientacao['Z'] + Posicao_orientacao['N5_Z'] - Posicao_orientacao['Terra_Z']
+
+Posicao_orientacao['rho6_X'] = Posicao_orientacao['X'] + Posicao_orientacao['N6_X'] - Posicao_orientacao['Terra_X']
+Posicao_orientacao['rho6_Y'] = Posicao_orientacao['Y'] + Posicao_orientacao['N6_Y'] - Posicao_orientacao['Terra_Y']
+Posicao_orientacao['rho6_Z'] = Posicao_orientacao['Z'] + Posicao_orientacao['N6_Z'] - Posicao_orientacao['Terra_Z']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Posicao_orientacao.to_csv('posicao.csv',sep=',')

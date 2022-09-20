@@ -30,7 +30,6 @@ def terra(Raio_terra, divisao):
             z.append(Raio_terra * np.cos(phi[j]))
     for i in range(0, len(x), 1):
         posicao.append([x[i], y[i], z[i]])
-
     Terra = pd.DataFrame(posicao, columns=['Terra_X', 'Terra_Y', 'Terra_Z'])
     Terra['Terra_R'] = np.sqrt(Terra['Terra_X']**2 + Terra['Terra_Y']**2 + Terra['Terra_Z']**2)
     return Terra
