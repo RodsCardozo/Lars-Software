@@ -40,8 +40,8 @@ rp = 7000  # semi eixo maior
 ecc = float(0.0)  # ecentricidade da orbita
 Raan = float(0.0)  # ascencao direita do nodo ascendente
 arg_per = (float(0.0))  # argumento do perigeu
-true_anomaly = (float(0.0))  # anomalia verdadeira
-inc = (float(51.6))  # inclinacao
+true_anomaly = (float(90.0))  # anomalia verdadeira
+inc = (float(51.0))  # inclinacao
 mu = 398600  # constante gravitacional da terra
 J2 = 1.08263e-3  # zona harmonica 2
 Raio_terra = float(6371)  # raio da terra
@@ -56,9 +56,9 @@ gama = 0.3
 PSIP = 0.0
 TETAP = 0.0
 PHIP = (2 * np.pi) / T_orbita
-psi0 = Raan
+psi0 = 0.0
 teta0 = inc
-phi0 = 0.0
+phi0 = true_anomaly
 psi = []
 teta = []
 phi = []
@@ -69,7 +69,7 @@ xyz = orientacao_quat.orientacao_quat(Ia, Ib, Ic, PSIP, TETAP, PHIP, psi0, teta0
 
 ori_xyz = np.zeros((len(orb_sat), 3))
 K = len(xyz) / len(orb_sat)
-print(K)
+#print(K)
 
 Posicao_orientacao = posi_ori(orb_sat, xyz)
 Vs = np.array([1, 0, 0])
@@ -167,7 +167,7 @@ Qs5 = []
 Qs6 = []
 
 for i in range(0, len(vetor_posicao), 1):
-    PSI = np.arccos(np.dot(vetor_posicao[i], Vs) / (np.linalg.norm(vetor_posicao[i]) * np.linalg.norm(Vs)))
+    PSI = np.arccos(np.dot(vetor_posicao[i]/np.linalg.norm(vetor_posicao[i]), Vs/np.linalg.norm(Vs)))
     QSI = np.arcsin(Raio_terra / np.linalg.norm(vetor_posicao[i]))
     if PSI + QSI < np.pi:
 
@@ -225,13 +225,13 @@ for i in range(0, len(vetor_posicao), 1):
         Qs5.append(0)
         Qs6.append(0)
 
-Qtotal = [[Qs1],
-          [Qs2],
-          [Qs3],
-          [Qs4],
-          [Qs5],
-          [Qs6]]
+rad_sol =[]
+for i in range(0, len(Qs1), 1):
+    rad_sol.append([Qs1[i], Qs2[i], Qs3[i], Qs4[i], Qs5[i], Qs6[i]])
+#print(rad_sol)
 
+Q_s = pd.DataFrame(rad_sol, columns=['Qs1', 'Qs2', 'Qs3', 'Qs4', 'Qs5', 'Qs6'])
+#print(Q_s)
 
 T = np.linspace(0, len(vetor_posicao), len(vetor_posicao))
 plt.xlabel("Ponto da orbita")
@@ -243,16 +243,6 @@ plt.plot(T, Qs4, color = 'yellow', label='N4')
 plt.plot(T, Qs5, color = 'red', label='N5')
 plt.plot(T, Qs6, color = 'magenta', label='N6')
 plt.show()
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -286,22 +276,6 @@ plt.show()
 
 
 '''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -40,7 +40,7 @@ def propagador_orbital(Semi_eixo, excentricidade, asce_direita, anomalia_verdade
     ecc = float(excentricidade)  # ecentricidade da orbita
     Raan = np.radians(float(asce_direita))  # ascencao direita do nodo ascendente
     arg_per = np.radians(float(argu_perigeu))  # argumento do perigeu
-    true_anomaly = np.radians(float(anomalia_verdadeira))  # anomalia verdadeira
+    true_anomaly = np.radians(float(anomalia_verdadeira/2))  # anomalia verdadeira
     inc = np.radians(float(inclinacao))  # inclinacao
     mu = 398600
     J2 = 1.08263e-3
@@ -56,7 +56,7 @@ def propagador_orbital(Semi_eixo, excentricidade, asce_direita, anomalia_verdade
     r_posi_0 = [alfa * np.cos(true_anomaly), alfa * np.sin(true_anomaly), 0]  # posicao inicial
     v_velo_0 = [beta * (-np.sin(true_anomaly)), beta * (ecc + np.cos(true_anomaly)), 0]  # velocidade inicial
 
-    r0 = np.linalg.norm(r_posi_0)  # modulo posicao inicial
+    r0 = np.sqrt(np.dot(r_posi_0, r_posi_0))  # modulo posicao inicial
     v0 = np.dot(r_posi_0, v_velo_0) / r0  # modulo velocidade inicial
 
     # listas com a posicao e velocidades ao longo da orbita
@@ -69,7 +69,7 @@ def propagador_orbital(Semi_eixo, excentricidade, asce_direita, anomalia_verdade
     # variacao da anomalia verdadeira
     inicio = true_anomaly
     fim = (2 * np.pi + true_anomaly) * num_orbita
-    passo = 200
+    passo = 300 #int(T_orb*num_orbita)
     teta = np.linspace(inicio, fim, passo)
 
     ''' Posicao do satelite no plano perifocal '''
