@@ -69,7 +69,7 @@ def propagador_orbital(Semi_eixo, excentricidade, asce_direita, anomalia_verdade
     # variacao da anomalia verdadeira
     inicio = true_anomaly
     fim = (2 * np.pi + true_anomaly) * num_orbita
-    passo = 300 #int(T_orb*num_orbita)
+    passo = 200 #int(T_orb*num_orbita)
     teta = np.linspace(inicio, fim, passo)
 
     ''' Posicao do satelite no plano perifocal '''
