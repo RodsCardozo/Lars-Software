@@ -47,9 +47,10 @@ def orientacao_quat(Ia, Ib, Ic, PSIP, TETAP, PHIP, Psi, Teta, Phi, Time_step):
     psi = float(np.radians(Psi))  # angulo inicial de PSI
 
     teta = float(np.radians(Teta))  # angulo inicial de TETA
-
-    phi = float(np.radians(Phi))  # angulo inicial de PHI
-
+    if Phi == 0.0:
+        phi = float(np.radians(0.0))  # angulo inicial de PHI
+    else:
+        phi = float(np.radians(Phi))
     wx3_i = float(-psip * np.sin(teta) * np.cos(phi) + tetap * np.sin(phi))  # velocidade angular do corpo em x
 
     wy3_i = float(psip * np.sin(teta) * np.sin(phi) + tetap * np.cos(phi))  # velocidade angular do corpo em y
@@ -117,13 +118,13 @@ def orientacao_quat(Ia, Ib, Ic, PSIP, TETAP, PHIP, Psi, Teta, Phi, Time_step):
     for i in range(0, len(t), 1):
 
         Phix = float(2 * (sol2[i][1] * sol2[i][3] - sol2[i][0] * sol2[i][2]))
-        Phiy = float(-2 * (sol2[i][2] * sol2[i][3] + sol2[i][0] * sol2[i][1]))
+        Phiy = float(2 * (sol2[i][2] * sol2[i][3] + sol2[i][0] * sol2[i][1]))
         Aa.append(Phix)
         Bb.append(Phiy)
         if Phix == 0:
             Phi1.append((0))
         else:
-            Phi1.append((np.arctan2(Phiy, Phix)))
+            Phi1.append((np.arctan2(Phiy, -Phix)))
 
     PTP = []
     for i in range(0,len(Psi1), 1):

@@ -16,6 +16,14 @@ def posi_ori(posi, ori):
             A.append([x, y, z, psi, teta, phi])
       posi_ori = pd.DataFrame(A, columns=['X', 'Y', 'Z', 'Psi', 'Teta', 'Phi'])
       return (posi_ori)
+def area(vertices):
+    import numpy as np
+    a1 = vertices[0]
+    a2 = vertices[1]
+    a = a1 - a2
+    e = np.linalg.norm(a)
+    A = ((3)**(1/2)/4)*e**2
+    return A
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,6 +34,7 @@ import periodo_orbital
 import propagador_orbital_mk3
 import sup_terra
 import pandas as pd
+import icosphere
 
 m = float(3)  # massa do cubesat
 a = float(0.1)  # comprimento do sat
@@ -121,7 +130,9 @@ for j in range(0, len(Ni), 1):
             A = (np.transpose(Tci).dot(vetor))
             R1 = A[0]
             R2 = A[1]
-            R3 = A[2]
+            if A[2] == -np.pi:
+                b = 0
+            R3 = b
             R.append([np.array(R1), np.array(R2), np.array(R3)])
 
       df2 = pd.DataFrame(R, columns=names[j])
@@ -129,12 +140,27 @@ for j in range(0, len(Ni), 1):
       Posicao_orientacao = pd.concat([Posicao_orientacao, df2], axis=1)
 
 
-divisao = int(10)
-vet_terra = terra.terra(Raio_terra, divisao)
-As = sup_terra.sup_terra(Raio_terra, divisao)
-concat_terra = pd.concat([vet_terra, As], axis=1)
-Posicao_orientacao = pd.concat([Posicao_orientacao, concat_terra], axis=1)
+divisao = int(5)
 
+#vet_terra = terra.terra(Raio_terra, divisao)
+nu = 3
+vertices, faces = icosphere.icosphere(nu)
+center = []
+for i in range(0, len(faces), 1):
+    A = vertices[faces[i][0]]*Raio_terra
+    B = vertices[faces[i][1]]*Raio_terra
+    C = vertices[faces[i][2]]*Raio_terra
+    x = A[0] + B[0] + C[0]
+    y = A[1] + B[1] + C[1]
+    z = A[2] + B[2] + C[2]
+    center.append([x/3, y/3, z/3])
+
+    print((np.linalg.norm(center[i])))
+
+As = area(vertices*Raio_terra)
+vet_terra = pd.DataFrame(center, columns=['Terra_X', 'Terra_Y', 'Terra_Z'])
+print(vet_terra)
+Posicao_orientacao = pd.concat([Posicao_orientacao, vet_terra], axis=1)
 vetor_terra = []
 for i in range(0, len(vet_terra), 1):
     vetor_terra.append(np.array([np.array(vet_terra.iloc[i][0]), np.array(vet_terra.iloc[i][1]), np.array(vet_terra.iloc[i][2])]))
@@ -167,9 +193,9 @@ for j in range(0, len(names), 1):
     Posicao_orientacao = pd.concat([Posicao_orientacao, df3], axis=1)
 
 Posicao_orientacao['final'] = 1
-'''
+
 Posicao_orientacao.to_csv('posicao.csv',sep=',')
-'''
+
 '''Radiacao incidente do sol'''
 
 Qs1 = []
@@ -265,7 +291,9 @@ H3 = []
 H4 = []
 H5 = []
 H6 = []
-
+i = 0
+A1 = np.array([np.array(Posicao_orientacao.iloc[i][24]), np.array(Posicao_orientacao.iloc[i][25]), np.array(Posicao_orientacao.iloc[i][26])])
+print(A1)
 
 for i in range(0, len(vetor_posicao), 1):
     PSI = np.arccos(np.dot(vetor_posicao[i]/np.linalg.norm(vetor_posicao[i]), Vs/np.linalg.norm(Vs)))
@@ -280,16 +308,17 @@ for i in range(0, len(vetor_posicao), 1):
 
         for k in range(0, len(vetor_terra), 1):
 
-            rhok1 = np.array([np.array(Posicao_orientacao.iloc[k][33]),  np.array(Posicao_orientacao.iloc[k][34]), np.array(Posicao_orientacao.iloc[k][35])]) + np.array(A1)
-            rhok2 = np.array([np.array(Posicao_orientacao.iloc[k][33]),  np.array(Posicao_orientacao.iloc[k][34]), np.array(Posicao_orientacao.iloc[k][35])]) + np.array(A2)
-            rhok3 = np.array([np.array(Posicao_orientacao.iloc[k][33]),  np.array(Posicao_orientacao.iloc[k][34]), np.array(Posicao_orientacao.iloc[k][35])]) + np.array(A3)
-            rhok4 = np.array([np.array(Posicao_orientacao.iloc[k][33]),  np.array(Posicao_orientacao.iloc[k][34]), np.array(Posicao_orientacao.iloc[k][35])]) + np.array(A4)
-            rhok5 = np.array([np.array(Posicao_orientacao.iloc[k][33]),  np.array(Posicao_orientacao.iloc[k][34]), np.array(Posicao_orientacao.iloc[k][35])]) + np.array(A5)
-            rhok6 = np.array([np.array(Posicao_orientacao.iloc[k][33]),  np.array(Posicao_orientacao.iloc[k][34]), np.array(Posicao_orientacao.iloc[k][35])]) + np.array(A6)
+            rhok1 = np.array([np.array(Posicao_orientacao.iloc[k][30]),  np.array(Posicao_orientacao.iloc[k][31]), np.array(Posicao_orientacao.iloc[k][32])]) + np.array(A1)
+            rhok2 = np.array([np.array(Posicao_orientacao.iloc[k][30]),  np.array(Posicao_orientacao.iloc[k][31]), np.array(Posicao_orientacao.iloc[k][32])]) + np.array(A2)
+            rhok3 = np.array([np.array(Posicao_orientacao.iloc[k][30]),  np.array(Posicao_orientacao.iloc[k][31]), np.array(Posicao_orientacao.iloc[k][32])]) + np.array(A3)
+            rhok4 = np.array([np.array(Posicao_orientacao.iloc[k][30]),  np.array(Posicao_orientacao.iloc[k][31]), np.array(Posicao_orientacao.iloc[k][32])]) + np.array(A4)
+
+            rhok5 = np.array([np.array(Posicao_orientacao.iloc[k][30]),  np.array(Posicao_orientacao.iloc[k][31]), np.array(Posicao_orientacao.iloc[k][32])]) + np.array(A5)
+            rhok6 = np.array([np.array(Posicao_orientacao.iloc[k][30]),  np.array(Posicao_orientacao.iloc[k][31]), np.array(Posicao_orientacao.iloc[k][32])]) + np.array(A6)
 
 
+            #As = np.array([Posicao_orientacao.iloc[k][31]])
             C_bek = np.dot(Vs, vetor_terra[k]) / (np.linalg.norm(Vs) * np.linalg.norm(vetor_terra[k]))
-            As = np.array([Posicao_orientacao.iloc[k][31]])
 
             if np.dot(rhok1, vetor_terra[k]) > 0:
                 C_aek1 = (np.dot(rhok1, vetor_terra[k])) / (np.linalg.norm(rhok1) * np.linalg.norm(vetor_terra[k]))

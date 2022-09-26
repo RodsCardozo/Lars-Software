@@ -23,13 +23,31 @@ def wireframe_plot(vertices, faces):
                       line=dict(color='rgb(40,40,40)', width=1))
     return gm
 
+def area(vertices):
+    import numpy as np
+    a1 = vertices[0]
+    a2 = vertices[1]
+    a = a1 - a2
+    e = np.linalg.norm(a)
+    A = ((3)**(1/2)/4)*e**2
+    return A
 
-nu = 15
+
+nu = 1
 vertices, faces = icosphere.icosphere(nu)
-scale = 6371
+center = []
+for i in range(0, len(faces), 1):
+    A = vertices[faces[i][0]]
+    B = vertices[faces[i][1]]
+    C = vertices[faces[i][2]]
+    x = A[0] + B[0] + C[0]
+    y = A[1] + B[1] + C[1]
+    z = A[2] + B[2] + C[2]
+    center.append([x/3, y/3, z/3])
+print(len(center))
+scale = 1
 vertices = vertices*scale
-print(vertices)
-print(faces)
+
 faces = faces
 fig = go.Figure()
 
@@ -38,3 +56,4 @@ fig.add_trace(wireframe_plot(vertices, faces));
 
 fig.update_layout(title_text='Icosphere', height=600, width=600)
 fig.show()
+
