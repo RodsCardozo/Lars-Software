@@ -69,7 +69,7 @@ def propagador_orbital(Semi_eixo, excentricidade, asce_direita, anomalia_verdade
     # variacao da anomalia verdadeira
     inicio = true_anomaly
     fim = (2 * np.pi + true_anomaly) * num_orbita
-    passo = 200 #int(T_orb*num_orbita)
+    passo = 50 #int(T_orb*num_orbita)
     teta = np.linspace(inicio, fim, passo)
 
     ''' Posicao do satelite no plano perifocal '''
@@ -119,9 +119,9 @@ def propagador_orbital(Semi_eixo, excentricidade, asce_direita, anomalia_verdade
         E = 2 * np.arctan(np.sqrt((1 - ecc) / (1 + ecc)) * np.tan(teta[i]))
         n = (mu ** 2 / h ** 3) * (1 - ecc ** 2) ** (3 / 2)
         del_t = (E - E * np.sin(E)) / (n)
-        # print(del_t )
-        Raan = Raan + RA_p * del_t
-        arg_per = arg_per + arg_per_p * del_t
+        #print(del_t )
+        #Raan = Raan + RA_p * del_t
+        #arg_per = arg_per + arg_per_p * del_t
         orbita.append([r_X[i], r_Y[i], r_Z[i]])
     if plotagem == 1:
         from mpl_toolkits.mplot3d import Axes3D

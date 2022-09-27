@@ -33,7 +33,7 @@ def area(vertices):
     return A
 
 
-nu = 1
+nu = 50
 vertices, faces = icosphere.icosphere(nu)
 center = []
 for i in range(0, len(faces), 1):
@@ -44,7 +44,9 @@ for i in range(0, len(faces), 1):
     y = A[1] + B[1] + C[1]
     z = A[2] + B[2] + C[2]
     center.append([x/3, y/3, z/3])
-print(len(center))
+print(faces)
+print(vertices)
+
 scale = 1
 vertices = vertices*scale
 

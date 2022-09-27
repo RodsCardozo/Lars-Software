@@ -415,11 +415,6 @@ for i in range(0, len(Posi_XYZ), 1):
         Rhok5 = np.array(Posi_XYZ[i]) - np.array(Terra[k]) + np.array(A5)
         Rhok6 = np.array(Posi_XYZ[i]) - np.array(Terra[k]) + np.array(A6)
 
-        rhok = np.array(Posi_XYZ[i]) - np.array(Terra[k])
-
-        Rrhok.append(rhok)
-        prod_vet.append(np.dot(rhok, Terra[k]))
-
         if np.dot(Rhok1, Terra[k]) > 0:
 
             C_aek1 = np.dot(Rhok1, Terra[k]) / (np.linalg.norm(Rhok1) * np.linalg.norm(Terra[k]))
@@ -438,7 +433,7 @@ for i in range(0, len(Posi_XYZ), 1):
         if np.dot(Rhok2, Terra[k]) > 0:
 
             C_aek2 = np.dot(Rhok2, Terra[k]) / (np.linalg.norm(Rhok2) * np.linalg.norm(Terra[k]))
-            C_aik2 = (np.dot(-Rhok2, A2)) / (np.linalg.norm(Rhok1) * np.linalg.norm(A2))
+            C_aik2 = (np.dot(-Rhok2, A2)) / (np.linalg.norm(Rhok2) * np.linalg.norm(A2))
 
             if C_aik2 > 0 and C_aek2 > 0:
 
