@@ -136,7 +136,7 @@ for j in range(0, len(Ni), 1):
       R = []
       Posicao_orientacao = pd.concat([Posicao_orientacao, df2], axis=1)
 
-nu = 100
+nu = 10
 vertices, faces = icosphere.icosphere(nu)
 center = []
 for i in range(0, len(faces), 1):
@@ -154,7 +154,7 @@ vet_terra = pd.DataFrame(center, columns=['Terra_X', 'Terra_Y', 'Terra_Z'])
 Posicao_orientacao = pd.concat([Posicao_orientacao, vet_terra], axis=1)
 
 Posicao_orientacao['final'] = 1
-Posicao_orientacao.to_csv('posicao.csv',sep=',')
+'''Posicao_orientacao.to_csv('posicao.csv',sep=',')'''
 
 vetor_terra = []
 for i in range(0, len(vet_terra), 1):
@@ -269,7 +269,7 @@ for i in range(0, len(vetor_posicao), 1):
     PSI = np.arccos(np.dot(vetor_posicao[i]/np.linalg.norm(vetor_posicao[i]), Vs/np.linalg.norm(Vs)))
     QSI = np.arcsin(Raio_terra / np.linalg.norm(vetor_posicao[i]))
 
-    if PSI + QSI < np.pi:
+    if PSI < np.pi/2:
 
         A1 = np.array([np.array(Posicao_orientacao.iloc[i][9]),  np.array(Posicao_orientacao.iloc[i][10]), np.array(Posicao_orientacao.iloc[i][11])])
         A2 = np.array([np.array(Posicao_orientacao.iloc[i][12]), np.array(Posicao_orientacao.iloc[i][13]), np.array(Posicao_orientacao.iloc[i][14])])

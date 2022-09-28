@@ -38,7 +38,7 @@ def orientacao_quat(Ia, Ib, Ic, PSIP, TETAP, PHIP, Psi, Teta, Phi, Time_step):
 
     phi = float(np.radians(Phi))  # angulo inicial de PHI
 
-    delt = Time_step/50
+    delt = Time_step/300
     T = 0
     while T < Time_step:
 
