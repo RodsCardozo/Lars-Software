@@ -25,14 +25,118 @@ def area(vertices, faces, Raio):
     e = np.linalg.norm(a)
     A = ((3)**(1/2)/4)*e**2
     return A
+def orientacao_quat(Ia, Ib, Ic, PSIP, TETAP, PHIP, Psi, Teta, Phi, Time_step):
+
+    """
+    & Ia = Momento de inercia na direcao x
+    & Ib = Momento de inercia na direcao y
+    & Ic = Momento de inercia na direcao z
+    & PSIP = Velocidade Angular do angulo PSI (3)
+    & TETAP = Velocidade Angular do angulo TETA (1)
+    & PHIP = Velocidade Angular do angulo PHI (3)
+    & PSI = Angulo PSI (3)
+    & TETA = Angulo TETA (1)
+    & PHI = Angulo PSI (3)
+    & Time_step = Tempo total de simulacao
+
+    """
+
+    PTP = []
+
+    psi = float(np.radians(Psi))  # angulo inicial de PSI
+
+    teta = float(np.radians(Teta))  # angulo inicial de TETA
+
+    phi = float(np.radians(Phi))  # angulo inicial de PHI
+
+    Ix3 = float(Ia)  # momento de incercia no eixo x
+
+    Iy3 = float(Ib)  # momento de incercia no eixo y
+
+    Iz3 = float(Ic)  # momento de incercia no eixo z
+
+    psip = float(PSIP)  # velocidade angular do angulo PSI
+
+    tetap = float(TETAP)  # velocidade angular do angulo TETA
+
+    phip = float(PHIP)  # velocidade angular do angulo PHI
+
+    wx3_i = float(-psip * np.sin(teta) * np.cos(phi) + tetap * np.sin(phi))  # velocidade angular do corpo em x
+
+    wy3_i = float(psip * np.sin(teta) * np.sin(phi) + tetap * np.cos(phi))  # velocidade angular do corpo em y
+
+    wz3_i = float(psip * np.cos(teta) + phip)  # velocidade angular do corpo em z
+
+    q0 = float((np.cos(psi / 2) * np.cos(teta / 2) * np.cos(phi / 2) - np.sin(psi / 2) * np.cos(teta / 2) * np.sin(
+            phi / 2)))  # quaternion q0
+
+    q1 = float((np.cos(psi / 2) * np.sin(teta / 2) * np.sin(phi / 2) - np.sin(psi / 2) * np.sin(teta / 2) * np.cos(
+            phi / 2)))  # quaternion q1
+
+    q2 = float((np.cos(psi / 2) * np.sin(teta / 2) * np.cos(phi / 2) + np.sin(psi / 2) * np.sin(teta / 2) * np.sin(
+            phi / 2)))  # quaternion q2
+
+    q3 = float((np.sin(psi / 2) * np.cos(teta / 2) * np.cos(phi / 2) + np.cos(psi / 2) * np.cos(teta / 2) * np.sin(
+            phi / 2)))  # quaternion q3
+
+    qi = [q0, q1, q2, q3, wx3_i, wy3_i, wz3_i]  # condicoes iniciais da integracao
+
+    def quat(q, t, Ix3, Iy3, Iz3):  # funcao para integrar
+
+        Ix3 = float(Ix3)
+
+        Iy3 = float(Iy3)
+
+        Iz3 = float(Iz3)
+
+        q0, q1, q2, q3, wx3, wy3, wz3 = q
+
+        dqdt = [0.5 * (q0 * 0 - q1 * wx3 - q2 * wy3 - q3 * wz3),
+                    0.5 * (q1 * 0 + q0 * wx3 - q3 * wy3 + q2 * wz3),
+                    0.5 * (q2 * 0 + q3 * wx3 + q0 * wy3 - q1 * wz3),
+                    0.5 * (q3 * 0 - q2 * wx3 + q1 * wy3 + q0 * wz3),
+                    ((Iy3 - Iz3) / Ix3) * wy3 * wz3,
+                    ((Iz3 - Ix3) / Iy3) * wz3 * wx3,
+                    ((Ix3 - Iy3) / Iz3) * wx3 * wy3]
+        return dqdt
+
+    passo = 50000
+    t = np.linspace(0, Time_step, passo)
+
+    sol2 = odeint(quat, qi, t, args=(Ix3, Iy3, Iz3))  # integracao do conjunto de EDO
+    Psi1 = []
+    Teta1 = []
+    Phi1 = []
+    for i in range(0, len(t), 1):
+        x = float(2 * (sol2[i][2] * sol2[i][3] - sol2[i][0] * sol2[i][1]))
+        y = float(2 * (sol2[i][1] * sol2[i][3] + sol2[i][0] * sol2[i][2]))
+        Psi1.append((np.arctan2(x, y)))
+    for i in range(0, len(t), 1):
+        B = float(2 * (sol2[i][0] ** 2 + sol2[i][3] ** 2) - 1)
+        Teta1.append((np.arcsin(B)))
+
+    for i in range(0, len(t), 1):
+        Phix = float(2 * (sol2[i][1] * sol2[i][3] - sol2[i][0] * sol2[i][2]))
+        Phiy = float(2 * (sol2[i][2] * sol2[i][3] + sol2[i][0] * sol2[i][1]))
+        Phi1.append((np.arctan2(Phiy, -Phix)))
+
+    for i in range(0, len(Phi1), 1):
+        PTP.append([Psi1[i], Teta1[i], Phi1[i]])
+
+    Psi_teta_phi = pd.DataFrame(PTP, columns=['Psi', 'Teta', 'Phi'])
+
+    return (PTP)
 
 import numpy as np
 import matplotlib.pyplot as plt
-import orientacao_quat
+#import orientacao_quat
 import periodo_orbital
 import propagador_orbital_mk3
 import pandas as pd
 import icosphere
+import numpy as np
+import pandas as pd
+from scipy.integrate import odeint
 
 m = float(3)  # massa do cubesat
 a = float(0.1)  # comprimento do sat
@@ -47,7 +151,7 @@ rp = 7000  # semi eixo maior
 ecc = float(0.0)  # ecentricidade da orbita
 Raan = float(0.0)  # ascencao direita do nodo ascendente
 arg_per = (float(0.0))  # argumento do perigeu
-true_anomaly = (float(230.0))  # anomalia verdadeira
+true_anomaly = (float(0.0))  # anomalia verdadeira
 inc = (float(51.0))  # inclinacao
 mu = 398600  # constante gravitacional da terra
 J2 = 1.08263e-3  # zona harmonica 2
@@ -73,13 +177,19 @@ phi = []
 
 orb_sat = propagador_orbital_mk3.propagador_orbital(rp, ecc, Raan, true_anomaly, inc, arg_per, num_orbita, 0)
 
-xyz = orientacao_quat.orientacao_quat(Ia, Ib, Ic, PSIP, TETAP, PHIP, psi0, teta0, phi0, T_orbita)
+xyz = orientacao_quat(Ia, Ib, Ic, PSIP, TETAP, PHIP, psi0, teta0, phi0, T_orbita) #Ia, Ib, Ic, PSIP, TETAP, PHIP, Psi, Teta, Phi, Time_step
 
-ori_xyz = np.zeros((len(orb_sat), 3))
 K = len(xyz) / len(orb_sat)
-print(K)
+xyz_novo = []
 
-Posicao_orientacao = posi_ori(orb_sat, xyz)
+for i in range(0, len(xyz), int(K)):
+    x_novo = (xyz[i][0])
+    y_novo = (xyz[i][1])
+    z_novo = (xyz[i][2])
+    xyz_novo.append([(x_novo), (y_novo), (z_novo)])
+xyz = pd.DataFrame(xyz_novo, columns=['Psi', 'Teta', 'Phi'])
+'''xyz.to_csv('xyz.csv',sep=',')'''
+Posicao_orientacao = pd.concat([orb_sat, xyz], axis=1)
 
 Vs = np.array([1, 0, 0])
 Ai = [a * c,
@@ -159,7 +269,7 @@ Posicao_orientacao['final'] = 1
 vetor_terra = []
 for i in range(0, len(vet_terra), 1):
     vetor_terra.append([(vet_terra.iloc[i][0]), (vet_terra.iloc[i][1]), (vet_terra.iloc[i][2])])
-
+print(len(vetor_terra))
 vetor_posicao = []
 for i in range(0, len(orb_sat), 1):
     R = np.array([np.array(Posicao_orientacao.iloc[i][0]), np.array(Posicao_orientacao.iloc[i][1]), np.array(Posicao_orientacao.iloc[i][2])])
@@ -281,12 +391,12 @@ for i in range(0, len(vetor_posicao), 1):
         for k in range(0, len(vetor_terra), 1):
 
             rho = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
-            rhok1 = rho + np.array(A1)
-            rhok2 = rho + np.array(A2)
-            rhok3 = rho + np.array(A3)
-            rhok4 = rho + np.array(A4)
-            rhok5 = rho + np.array(A5)
-            rhok6 = rho + np.array(A6)
+            rhok1 = rho #+ np.array(A1)
+            rhok2 = rho #+ np.array(A2)
+            rhok3 = rho #+ np.array(A3)
+            rhok4 = rho #+ np.array(A4)
+            rhok5 = rho #+ np.array(A5)
+            rhok6 = rho #+ np.array(A6)
 
 
             #As = np.array([Posicao_orientacao.iloc[k][31]])
@@ -294,7 +404,7 @@ for i in range(0, len(vetor_posicao), 1):
 
             if np.dot(rhok1, vetor_terra[k]) > 0:
                 C_aek1 = np.dot(rhok1/np.linalg.norm(rhok1), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
-                C_aik1 = np.dot(-rhok1/np.linalg.norm(rhok1) , A1/np.linalg.norm(A1))
+                C_aik1 = np.dot(-rhok1/np.linalg.norm(rhok1), A1/np.linalg.norm(A1))
 
                 if C_aik1 > 0 and C_aek1 > 0 and C_bek > 0:
                     Balb = float(1.0)
@@ -433,24 +543,34 @@ R6 = []
 
 Rrhok = []
 prod_vet2 = []
+i = 1
+A5 = np.array([np.array(Posicao_orientacao.iloc[i][21]), np.array(Posicao_orientacao.iloc[i][22]), np.array(Posicao_orientacao.iloc[i][23])])
+print(A5)
 for i in range(0, len(vetor_posicao), 1):
 
-    A1 = np.array([np.array(Posicao_orientacao.iloc[i][9]),  np.array(Posicao_orientacao.iloc[i][10]), np.array(Posicao_orientacao.iloc[i][11])])
-    A2 = np.array([np.array(Posicao_orientacao.iloc[i][12]), np.array(Posicao_orientacao.iloc[i][13]), np.array(Posicao_orientacao.iloc[i][14])])
-    A3 = np.array([np.array(Posicao_orientacao.iloc[i][15]), np.array(Posicao_orientacao.iloc[i][16]), np.array(Posicao_orientacao.iloc[i][17])])
-    A4 = np.array([np.array(Posicao_orientacao.iloc[i][18]), np.array(Posicao_orientacao.iloc[i][19]), np.array(Posicao_orientacao.iloc[i][20])])
-    A5 = np.array([np.array(Posicao_orientacao.iloc[i][21]), np.array(Posicao_orientacao.iloc[i][22]), np.array(Posicao_orientacao.iloc[i][23])])
-    A6 = np.array([np.array(Posicao_orientacao.iloc[i][24]), np.array(Posicao_orientacao.iloc[i][25]), np.array(Posicao_orientacao.iloc[i][26])])
 
     for k in range(0, len(vetor_terra), 1):
 
+        A1 = np.array([np.array(Posicao_orientacao.iloc[i][9]), np.array(Posicao_orientacao.iloc[i][10]),
+                       np.array(Posicao_orientacao.iloc[i][11])])
+        A2 = np.array([np.array(Posicao_orientacao.iloc[i][12]), np.array(Posicao_orientacao.iloc[i][13]),
+                       np.array(Posicao_orientacao.iloc[i][14])])
+        A3 = np.array([np.array(Posicao_orientacao.iloc[i][15]), np.array(Posicao_orientacao.iloc[i][16]),
+                       np.array(Posicao_orientacao.iloc[i][17])])
+        A4 = np.array([np.array(Posicao_orientacao.iloc[i][18]), np.array(Posicao_orientacao.iloc[i][19]),
+                       np.array(Posicao_orientacao.iloc[i][20])])
+        A5 = np.array([np.array(Posicao_orientacao.iloc[i][21]), np.array(Posicao_orientacao.iloc[i][22]),
+                       np.array(Posicao_orientacao.iloc[i][23])])
+        A6 = np.array([np.array(Posicao_orientacao.iloc[i][24]), np.array(Posicao_orientacao.iloc[i][25]),
+                       np.array(Posicao_orientacao.iloc[i][26])])
+
         rho = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
-        Rhok1 = rho + np.array(A1)
-        Rhok2 = rho + np.array(A2)
-        Rhok3 = rho + np.array(A3)
-        Rhok4 = rho + np.array(A4)
-        Rhok5 = rho + np.array(A5)
-        Rhok6 = rho + np.array(A6)
+        Rhok1 = rho #+ np.array(A1)
+        Rhok2 = rho #+ np.array(A2)
+        Rhok3 = rho #+ np.array(A3)
+        Rhok4 = rho #+ np.array(A4)
+        Rhok5 = rho #+ np.array(A5)
+        Rhok6 = rho #+ np.array(A6)
 
         if np.dot(Rhok1, vetor_terra[k]) > 0:
 

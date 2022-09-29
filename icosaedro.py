@@ -33,24 +33,48 @@ def area(vertices):
     return A
 
 
-nu = 50
+nu = 10
 vertices, faces = icosphere.icosphere(nu)
 center = []
+Raio_terra = 6000
 for i in range(0, len(faces), 1):
-    A = vertices[faces[i][0]]
-    B = vertices[faces[i][1]]
-    C = vertices[faces[i][2]]
+    A = vertices[faces[i][0]]*Raio_terra
+    B = vertices[faces[i][1]]*Raio_terra
+    C = vertices[faces[i][2]]*Raio_terra
     x = A[0] + B[0] + C[0]
     y = A[1] + B[1] + C[1]
     z = A[2] + B[2] + C[2]
     center.append([x/3, y/3, z/3])
-print(faces)
-print(vertices)
+print(center)
+from mpl_toolkits import mplot3d
+import numpy as np
+import matplotlib.pyplot as plt
+x = []
+y = []
+z = []
+# Creating dataset
+for i in range (0, len(center), 1):
+    x.append(center[i][0])
+    y.append(center[i][1])
+    z.append(center[i][2])
+
+# Creating figure
+fig = plt.figure(figsize=(10, 7))
+ax = plt.axes(projection="3d")
+
+# Creating plot
+ax.scatter3D(x, y, z, color="green")
+plt.title("simple 3D scatter plot")
+
+# show plot
+plt.show()
+
+
 
 scale = 1
 vertices = vertices*scale
 
-faces = faces
+'''faces = faces
 fig = go.Figure()
 
 fig.add_trace(mesh_plot(vertices, faces))
@@ -58,4 +82,4 @@ fig.add_trace(wireframe_plot(vertices, faces));
 
 fig.update_layout(title_text='Icosphere', height=600, width=600)
 fig.show()
-
+'''
