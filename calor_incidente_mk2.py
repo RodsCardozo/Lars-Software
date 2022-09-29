@@ -162,7 +162,6 @@ Ir = 267.0
 e = 1.0
 ai = 1.0
 T_orbita = periodo_orbital.periodo_orbital(rp)
-print(T_orbita)
 passo = 10000
 gama = 0.3
 PSIP = 0.0
@@ -246,7 +245,7 @@ for j in range(0, len(Ni), 1):
       R = []
       Posicao_orientacao = pd.concat([Posicao_orientacao, df2], axis=1)
 
-nu = 10
+nu = 50
 vertices, faces = icosphere.icosphere(nu)
 center = []
 for i in range(0, len(faces), 1):
@@ -269,7 +268,6 @@ Posicao_orientacao['final'] = 1
 vetor_terra = []
 for i in range(0, len(vet_terra), 1):
     vetor_terra.append([(vet_terra.iloc[i][0]), (vet_terra.iloc[i][1]), (vet_terra.iloc[i][2])])
-print(len(vetor_terra))
 vetor_posicao = []
 for i in range(0, len(orb_sat), 1):
     R = np.array([np.array(Posicao_orientacao.iloc[i][0]), np.array(Posicao_orientacao.iloc[i][1]), np.array(Posicao_orientacao.iloc[i][2])])
@@ -391,12 +389,12 @@ for i in range(0, len(vetor_posicao), 1):
         for k in range(0, len(vetor_terra), 1):
 
             rho = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
-            rhok1 = rho #+ np.array(A1)
-            rhok2 = rho #+ np.array(A2)
-            rhok3 = rho #+ np.array(A3)
-            rhok4 = rho #+ np.array(A4)
-            rhok5 = rho #+ np.array(A5)
-            rhok6 = rho #+ np.array(A6)
+            rhok1 = rho + np.array(A1)
+            rhok2 = rho + np.array(A2)
+            rhok3 = rho + np.array(A3)
+            rhok4 = rho + np.array(A4)
+            rhok5 = rho + np.array(A5)
+            rhok6 = rho + np.array(A6)
 
 
             #As = np.array([Posicao_orientacao.iloc[k][31]])
@@ -541,11 +539,6 @@ R4 = []
 R5 = []
 R6 = []
 
-Rrhok = []
-prod_vet2 = []
-i = 1
-A5 = np.array([np.array(Posicao_orientacao.iloc[i][21]), np.array(Posicao_orientacao.iloc[i][22]), np.array(Posicao_orientacao.iloc[i][23])])
-print(A5)
 for i in range(0, len(vetor_posicao), 1):
 
 
@@ -565,12 +558,12 @@ for i in range(0, len(vetor_posicao), 1):
                        np.array(Posicao_orientacao.iloc[i][26])])
 
         rho = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
-        Rhok1 = rho #+ np.array(A1)
-        Rhok2 = rho #+ np.array(A2)
-        Rhok3 = rho #+ np.array(A3)
-        Rhok4 = rho #+ np.array(A4)
-        Rhok5 = rho #+ np.array(A5)
-        Rhok6 = rho #+ np.array(A6)
+        Rhok1 = rho + np.array(A1)
+        Rhok2 = rho + np.array(A2)
+        Rhok3 = rho + np.array(A3)
+        Rhok4 = rho + np.array(A4)
+        Rhok5 = rho + np.array(A5)
+        Rhok6 = rho + np.array(A6)
 
         if np.dot(Rhok1, vetor_terra[k]) > 0:
 
@@ -676,10 +669,6 @@ for i in range(0, len(vetor_posicao), 1):
     R4.append(Hrad4)
     Qrad4.append(e * Ir * (Hrad4))
     Hrad4 = 0
-
-    R5.append(Hrad5)
-    Qrad5.append(e * Ir * (Hrad5))
-    Hrad5 = 0
 
     R5.append(Hrad5)
     Qrad5.append(e * Ir * (Hrad5))
