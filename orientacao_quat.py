@@ -109,7 +109,7 @@ def orientacao_quat(Ia, Ib, Ic, PSIP, TETAP, PHIP, Psi, Teta, Phi, Time_step):
     for i in range(0, len(t), 1):
         Phix = float(2 * (sol2[i][1] * sol2[i][3] - sol2[i][0] * sol2[i][2]))
         Phiy = float(2 * (sol2[i][2] * sol2[i][3] + sol2[i][0] * sol2[i][1]))
-        Phi1.append((np.arctan2(-Phiy, Phix)))
+        Phi1.append((np.arctan2(Phiy, -Phix)))
 
     for i in range(0, len(Phi1), 1):
         PTP.append([Psi1[i], Teta1[i], Phi1[i]])

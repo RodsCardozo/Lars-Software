@@ -33,7 +33,7 @@ def area(vertices):
     return A
 
 
-nu = 10
+nu = 50
 vertices, faces = icosphere.icosphere(nu)
 center = []
 Raio_terra = 6000

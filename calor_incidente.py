@@ -448,7 +448,7 @@ for i in range(0, len(Posi_XYZ), 1):
         if np.dot(Rhok3, Terra[k]) > 0:
 
             C_aek3 = np.dot(Rhok3, Terra[k]) / (np.linalg.norm(Rhok3) * np.linalg.norm(Terra[k]))
-            C_aik3 = (np.dot(-Rhok3, A3)) / (np.linalg.norm(Rhok3) * np.linalg.norm(A1))
+            C_aik3 = (np.dot(-Rhok3, A3)) / (np.linalg.norm(Rhok3) * np.linalg.norm(A3))
 
             if C_aik3 > 0 and C_aek3 > 0:
 
@@ -520,10 +520,6 @@ for i in range(0, len(Posi_XYZ), 1):
     R4.append(Hrad4)
     Qrad4.append(e * Ir * (Hrad4))
     Hrad4 = 0
-
-    R5.append(Hrad5)
-    Qrad5.append(e * Ir * (Hrad5))
-    Hrad5 = 0
 
     R5.append(Hrad5)
     Qrad5.append(e * Ir * (Hrad5))
