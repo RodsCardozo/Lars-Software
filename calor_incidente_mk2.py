@@ -2,37 +2,28 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 def posi_ori(posi, ori):
-      import numpy as np
-      import pandas as pd
-      orb_sat = posi
-      xyz = ori
-      K = int(len(xyz) / len(orb_sat))
-      print(K)
-      A = []
-      ''' for i in range(0, len(orb_sat), 1):
-            x = orb_sat.iloc[i][0]
-            y = orb_sat.iloc[i][1]
-            z = orb_sat.iloc[i][2]
-            j = i*K
-            psi = xyz.iloc[j][0]
-            teta = xyz.iloc[j][1]
-            phi = xyz.iloc[j][2]'''
-      ori_xyz = np.zeros((len(orb_sat), 3))
-      j = 0
-      i = 0
-      '''for i in range(0, len(xyz), int(K)):'''
-      while j <= len(orb_sat)-1:
-            x = orb_sat.iloc[j,0]
-            y = orb_sat.iloc[j,1]
-            z = orb_sat.iloc[j, 2]
-            psi = xyz.iloc[i, 0]
-            teta = xyz.iloc[i, 1]
-            phi = xyz.iloc[i, 2]
-            j = j + 1
-            i = i + K-1
-            A.append([x, y, z, psi, teta, phi])
+    import numpy as np
+    import pandas as pd
+    orb_sat = posi
+    xyz = ori
+    print(len(orb_sat))
+    print(len(ori))
+    x = []
+    y = []
+    z = []
+    psi = []
+    teta = []
+    phi =[]
+
+    for i in range(0, len(orb_sat), 1):
+        x.append(orb_sat.iloc[i, 0])
+        y.append(orb_sat.iloc[i, 1])
+        z.append(orb_sat.iloc[i, 2])
+
+    for i in range(0, len(xyz), ):
+      A.append([x, y, z, psi, teta, phi])
       posi_ori = pd.DataFrame(A, columns=['X', 'Y', 'Z', 'Psi', 'Teta', 'Phi'])
-      return (posi_ori)
+    return (posi_ori)
 def area(vertices, faces, Raio):
     import numpy as np
     a1 = vertices[faces[0][0]]*Raio
@@ -273,7 +264,7 @@ for j in range(0, len(Ni), 1):
       R = []
       Posicao_orientacao = pd.concat([Posicao_orientacao, df2], axis=1)
 print('Calculando icosaedro')
-nu = 10
+nu = 20
 vertices, faces = icosphere.icosphere(nu)
 center = []
 for i in range(0, len(faces), 1):
