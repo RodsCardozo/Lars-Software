@@ -23,20 +23,20 @@ def wireframe_plot(vertices, faces):
                       line=dict(color='rgb(40,40,40)', width=1))
     return gm
 
-def area(vertices):
+def area(vertices, faces, Raio):
     import numpy as np
-    a1 = vertices[0]
-    a2 = vertices[1]
-    a = a1 - a2
+    a1 = vertices[faces[0][0]]*Raio
+    a2 = vertices[faces[0][1]]*Raio
+    a = np.array(a1) - np.array(a2)
     e = np.linalg.norm(a)
     A = ((3)**(1/2)/4)*e**2
     return A
 
 
-nu = 50
+nu = 10
 vertices, faces = icosphere.icosphere(nu)
 center = []
-Raio_terra = 6000
+Raio_terra = 6371
 for i in range(0, len(faces), 1):
     A = vertices[faces[i][0]]*Raio_terra
     B = vertices[faces[i][1]]*Raio_terra
@@ -45,7 +45,8 @@ for i in range(0, len(faces), 1):
     y = A[1] + B[1] + C[1]
     z = A[2] + B[2] + C[2]
     center.append([x/3, y/3, z/3])
-print(center)
+
+'''print(center)
 from mpl_toolkits import mplot3d
 import numpy as np
 import matplotlib.pyplot as plt
@@ -68,7 +69,7 @@ plt.title("simple 3D scatter plot")
 
 # show plot
 plt.show()
-
+'''
 
 
 scale = 1

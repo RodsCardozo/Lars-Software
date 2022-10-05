@@ -76,8 +76,7 @@ def propagador_orbital(Semi_eixo, excentricidade, asce_direita, anomalia_verdade
 
     for i in range(0, len(teta), 1):
 
-        r = float(
-            (h ** 2 / mu) * (1 / (1 + (h ** 2 / (mu * r0) - 1) * np.cos(teta[i]) - ((h * v0) / mu) * np.sin(teta[i]))))
+        r = float((h ** 2 / mu) * (1 / (1 + (h ** 2 / (mu * r0) - 1) * np.cos(teta[i]) - ((h * v0) / mu) * np.sin(teta[i]))))
 
         f = float(1 - ((mu * r) / h ** 2) * (1 - np.cos(teta[i])))
         g = float(((r0 * r) / h) * np.sin(teta[i]))
@@ -118,7 +117,8 @@ def propagador_orbital(Semi_eixo, excentricidade, asce_direita, anomalia_verdade
 
         E = 2 * np.arctan(np.sqrt((1 - ecc) / (1 + ecc)) * np.tan(teta[i]))
         n = (mu ** 2 / h ** 3) * (1 - ecc ** 2) ** (3 / 2)
-        del_t = (E - E * np.sin(E)) / (n)
+
+        del_t = (E - ecc * np.sin(E)) / (n)
         #print(del_t )
         Raan = Raan + RA_p * del_t
         arg_per = arg_per + arg_per_p * del_t
