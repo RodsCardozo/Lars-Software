@@ -21,7 +21,7 @@ def posi_ori(posi, ori):
       j = 0
       i = 0
       '''for i in range(0, len(xyz), int(K)):'''
-      while j <= len(orb_sat):
+      while j <= len(orb_sat)-1:
             x = orb_sat.iloc[j,0]
             y = orb_sat.iloc[j,1]
             z = orb_sat.iloc[j, 2]
@@ -29,7 +29,7 @@ def posi_ori(posi, ori):
             teta = xyz.iloc[i, 1]
             phi = xyz.iloc[i, 2]
             j = j + 1
-            i = i + K
+            i = i + K-1
             A.append([x, y, z, psi, teta, phi])
       posi_ori = pd.DataFrame(A, columns=['X', 'Y', 'Z', 'Psi', 'Teta', 'Phi'])
       return (posi_ori)
@@ -143,7 +143,7 @@ def orientacao_quat(Ia, Ib, Ic, PSIP, TETAP, PHIP, Psi, Teta, Phi, Time_step):
         if Phix == 0:
             Phi1.append((0))
         else:
-            Phi1.append((np.arctan2(Phiy,-Phix)))
+            Phi1.append((np.arctan2(-Phiy,Phix)))
 
     for i in range(0, len(Phi1), 1):
         PTP.append([Psi1[i], Teta1[i], Phi1[i]])
