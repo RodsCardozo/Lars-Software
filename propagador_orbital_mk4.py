@@ -12,13 +12,13 @@ from datetime import datetime
 from datetime import timedelta
 from nrlmsise00 import msise_model
 import periodo_orbital
-def propagador(q, t, Rho, velocidade, massa, CD, altitude, Area_transversal):  # funcao para integrar
+def propagador(q, t, Rho, velocidade, massa, CD, posicao, Area_transversal):  # funcao para integrar
     import numpy as np
     mu = 398600
     J2 = 1.08263e-3
     R_terra = 6371
     rho = Rho
-    r = altitude
+    r = posicao
     m = float(massa)  # massa do cubesat
     a = float(0.1)  # comprimento do sat
     b = float(0.1)  # largura do sat
@@ -28,7 +28,7 @@ def propagador(q, t, Rho, velocidade, massa, CD, altitude, Area_transversal):  #
     Iz3 = (m / 12) * (a ** 2 + b ** 2)  # momento de inercia na direcao z
     h, ecc, anomalia_verdadeira, raan, inc, arg_per, q0, q1, q2, q3, wx3, wy3, wz3 = q
 
-    dMdt = [r*((-1/(2*r))*h*rho*velocidade*((CD*Area_transversal)/m) - 1.5 * (J2*mu*R_terra**2)/r**4 * np.sin(inc)**2*np.sin(2*(arg_per + anomalia_verdadeira))),
+    dMdt = [r*((-1/(2*r))*h*rho*velocidade*((CD*Area_transversal)/m) - 1.5 * ((J2*mu*R_terra**2)/r**4) * np.sin(inc)**2*np.sin(2*(arg_per + anomalia_verdadeira))),
 
             (h/mu)*np.sin(anomalia_verdadeira)*((-1/(2*h))*mu*ecc*rho*velocidade*((CD*Area_transversal)/m)*np.sin(anomalia_verdadeira)
             - 1.5*((J2*mu*R_terra**2)/r**4)*(1 - 3*np.sin(inc)**2*np.sin(arg_per + anomalia_verdadeira)**2))
@@ -40,7 +40,7 @@ def propagador(q, t, Rho, velocidade, massa, CD, altitude, Area_transversal):  #
             - (r + h**2/mu)*(np.sin(anomalia_verdadeira)/(ecc*h))*((-1/(2*r))*h*rho*velocidade*((CD*Area_transversal)/m)
             - 1.5 * (J2*mu*R_terra**2)/r**4 * np.sin(inc)**2 * np.sin(2*(arg_per + anomalia_verdadeira))),
 
-            (r/(h*np.sin(anomalia_verdadeira)))*np.sin(arg_per + anomalia_verdadeira)*(- 1.5*((J2*mu*R_terra**2)/r**4)*np.sin(2*inc)*np.sin(arg_per + anomalia_verdadeira)),
+            (r/(h*np.sin(inc)))*np.sin(arg_per + anomalia_verdadeira)*(- 1.5*((J2*mu*R_terra**2)/r**4)*np.sin(2*inc)*np.sin(arg_per + anomalia_verdadeira)),
 
             (r / (h)) * np.cos(arg_per + anomalia_verdadeira) * (- 1.5 * ((J2 * mu * R_terra ** 2) / r ** 4) * np.sin(2 * inc) * np.sin(arg_per + anomalia_verdadeira)),
 
@@ -49,6 +49,7 @@ def propagador(q, t, Rho, velocidade, massa, CD, altitude, Area_transversal):  #
             - (r + h**2/mu)*np.sin(anomalia_verdadeira)*((-1/(2*h))*h*rho*velocidade*((CD*Area_transversal)/m)
             - 1.5 * (J2*mu*R_terra**2)/r**4 * np.sin(inc)**2 * np.sin(2*(arg_per + anomalia_verdadeira))))
             - ((r*np.sin(arg_per + anomalia_verdadeira))/(h*np.tan(inc)))*(- 1.5 * (J2*mu*R_terra**2)/r**4 * np.sin(2*inc) * np.sin(arg_per + anomalia_verdadeira)),
+
             0.5 * (q0 * 0 - q1 * wx3 - q2 * wy3 - q3 * wz3),
             0.5 * (q1 * 0 + q0 * wx3 - q3 * wy3 + q2 * wz3),
             0.5 * (q2 * 0 + q3 * wx3 + q0 * wy3 - q1 * wz3),
@@ -66,10 +67,10 @@ def rho(data, altitude, latitude, longitude):
 # condicoes iniciais
 
 rp0 = float(7000)  # semi eixo maior
-ecc0 = float(0.000261)  # ecentricidade da orbita
+ecc0 = float(0.0261)  # ecentricidade da orbita
 Raan0 = np.radians(float(142.0))  # ascencao direita do nodo ascendente
-arg_per0 = np.radians(float(0.0))  # argumento do perigeu
-true_anomaly0 = np.radians(float(1))  # anomalia verdadeira
+arg_per0 = np.radians(float(10.0))  # argumento do perigeu
+true_anomaly0 = np.radians(float(10))  # anomalia verdadeira
 inc0 = np.radians(float(51.63))  # inclinacao
 mu = 398600
 J2 = 1.08263e-3
@@ -98,13 +99,15 @@ q3 = float((np.sin(psi / 2) * np.cos(teta / 2) * np.cos(phi / 2) + np.cos(psi / 
 mu = 398600
 J2 = 1.08263e-3
 R_terra = 6371
-Time_step = 2
+Time_step = 1
 passo = 1000
-t = np.linspace(0, Time_step, passo)
 ini_date = datetime(2022, 5, 10, 18, 0, 0)
-T = 5000
+A = periodo_orbital.periodo_orbital(7000)
+T = A
 delt = 0
+t = np.linspace(0, Time_step, passo)
 solution = []
+posicao = rp0
 while delt < T:
     qi = [h0, ecc0, true_anomaly0, Raan0, inc0, arg_per0, q0, q1, q2, q3, wx3_i, wy3_i, wz3_i]
     altitude = rp0 - R_terra
@@ -112,9 +115,8 @@ while delt < T:
     velocidade = np.sqrt(mu/rp0)
     massa = 3.0
     CD = 2.2
-    altitude = rp0
     Area_transversal = 0.1*0.1
-    sol = odeint(propagador, qi, t, args=(Rho, velocidade, massa, CD, altitude, Area_transversal))
+    sol = odeint(propagador, qi, t, args=(Rho, velocidade, massa, CD, posicao, Area_transversal))
     solution.append(sol[passo - 1])
     h0 = sol[passo-1][0]
     ecc0 = sol[passo-1][1]
@@ -122,6 +124,7 @@ while delt < T:
     Raan0 = sol[passo-1][3]
     inc0 = sol[passo-1][4]
     arg_per0 = sol[passo-1][5]
+    posicao = (h0**2/mu)*(1/(1-ecc0*np.cos(true_anomaly0)))
     q0 = sol[passo-1][6]
     q1 = sol[passo-1][7]
     q2 = sol[passo-1][8]
@@ -132,7 +135,6 @@ while delt < T:
     delt = delt + Time_step
     final_date = timedelta(seconds=Time_step)
     ini_date = ini_date + final_date
-    solution.append(sol[passo-1])
 
 solucao = pd.DataFrame(solution, columns=['h', 'ecc', 'anomalia_verdadeira', 'raan', 'inc', 'arg_per', 'q0', 'q1', 'q2', 'q3', 'wx3', 'wy3', 'wz3'])
 solucao['X_perifocal'] = (solucao['h']**2/mu)*(1/(1 + solucao['ecc']*np.cos(solucao['anomalia_verdadeira'])))*np.cos(solucao['anomalia_verdadeira'])
@@ -160,7 +162,6 @@ a1 = ax.scatter3D(solucao['X_ECI'], solucao['Y_ECI'], solucao['Z_ECI'])
 ax.set_xlabel('x [km]')
 ax.set_ylabel('y [km]')
 ax.set_zlabel('z [km]')
-fig.colorbar(a1, ax=ax, shrink=1, aspect=25, orientation='horizontal')
 plt.show()
 solucao['final'] = 1
 solucao.to_csv('solver.csv',sep=',')
