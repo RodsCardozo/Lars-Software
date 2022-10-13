@@ -120,7 +120,7 @@ def propagador_orbital(semi_eixo, excentricidade, Raan, argumento_perigeu, anoma
     J2 = 1.08263e-3
     R_terra = 6371
     Time_step = 1
-    passo = 100
+    passo = 1000
     ini_date = datetime(2022, 5, 10, 18, 0, 0)
     n = num_orbitas
     T = T_orb*n
