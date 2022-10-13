@@ -5,7 +5,7 @@ Codigo para integracao das equacoes do movimento do satelite
 incluindo a atitude dele. Resolver o sistema de equacoes diferenciais utilizando
 o solver odint. *ver como essa biblioteca faz a integracao.
 '''
-def propagador_orbital(semi_eixo, excentricidade, Raan, argumento_perigeu, anomalia_verdadeira, inclinacao, num_orbitas, psi, teta, phi, psip, tetap, phip):
+def propagador_orbital(data, semi_eixo, excentricidade, Raan, argumento_perigeu, anomalia_verdadeira, inclinacao, num_orbitas, delt, psi, teta, phi, psip, tetap, phip):
 
     """
     & Semi_eixo = altitude no periapse da orbita
@@ -120,11 +120,10 @@ def propagador_orbital(semi_eixo, excentricidade, Raan, argumento_perigeu, anoma
     J2 = 1.08263e-3
     R_terra = 6371
     Time_step = 1
-    passo = 1000
-    ini_date = datetime(2022, 5, 10, 18, 0, 0)
+    passo = int(Time_step/delt)
+    ini_date = data
     n = num_orbitas
     T = T_orb*n
-    delt = 0
     t = np.linspace(0, Time_step, passo)
     solution = []
     posicao = rp0
@@ -157,26 +156,22 @@ def propagador_orbital(semi_eixo, excentricidade, Raan, argumento_perigeu, anoma
         ini_date = ini_date + final_date
 
     solucao = pd.DataFrame(solution, columns=['h', 'ecc', 'anomalia_verdadeira', 'raan', 'inc', 'arg_per', 'q0', 'q1', 'q2', 'q3', 'wx3', 'wy3', 'wz3'])
-
-    solucao['PSI'] = np.arctan2(2*(solucao['q2']*solucao['q3'] - solucao['q0']*solucao['q1']), 2*(solucao['q1']*solucao['q3'] + solucao['q0']*solucao['q2']))
-    solucao['TETA'] = np.arccos(2*(solucao['q0']**2 + solucao['q3']**2) - 1)
-    solucao['PHI'] = np.arctan2(-2*(solucao['q2']*solucao['q3'] + solucao['q0']*solucao['q1']), 2*(solucao['q1']*solucao['q3'] - solucao['q0']*solucao['q2']) )
-
     solucao['X_perifocal'] = (solucao['h']**2/mu)*(1/(1 + solucao['ecc']*np.cos(solucao['anomalia_verdadeira'])))*np.cos(solucao['anomalia_verdadeira'])
     solucao['Y_perifocal'] = (solucao['h']**2/mu)*(1/(1 + solucao['ecc']*np.cos(solucao['anomalia_verdadeira'])))*np.sin(solucao['anomalia_verdadeira'])
     solucao['Z_perifocal'] = 0
-
     solucao['distancia'] = np.sqrt(solucao['X_perifocal']**2 + solucao['Y_perifocal']**2)
 
-    solucao['X_ECI'] = ((np.cos(solucao['raan'])*np.cos(solucao['arg_per']) - np.sin(solucao['raan'])*np.sin(solucao['arg_per'])*np.cos(solucao['inc']))*solucao['X_perifocal']
+    df = pd.DataFrame()
+    df['PSI'] = np.arctan2(2*(solucao['q2']*solucao['q3'] - solucao['q0']*solucao['q1']), 2*(solucao['q1']*solucao['q3'] + solucao['q0']*solucao['q2']))
+    df['TETA'] = np.arccos(2*(solucao['q0']**2 + solucao['q3']**2) - 1)
+    df['PHI'] = np.arctan2(-2*(solucao['q2']*solucao['q3'] + solucao['q0']*solucao['q1']), 2*(solucao['q1']*solucao['q3'] - solucao['q0']*solucao['q2']) )
+    df['X_ECI'] = ((np.cos(solucao['raan'])*np.cos(solucao['arg_per']) - np.sin(solucao['raan'])*np.sin(solucao['arg_per'])*np.cos(solucao['inc']))*solucao['X_perifocal']
                         + (-np.cos(solucao['raan'])*np.sin(solucao['arg_per']) - np.sin(solucao['raan'])*np.cos(solucao['inc'])*np.cos(solucao['arg_per']))*solucao['Y_perifocal']
                         + np.sin(solucao['raan'])*np.sin(solucao['inc'])*solucao['Z_perifocal'])
-
-    solucao['Y_ECI'] = ((np.sin(solucao['raan'])*np.cos(solucao['arg_per']) + np.cos(solucao['raan'])*np.cos(solucao['inc'])*np.sin(solucao['arg_per']))*solucao['X_perifocal']
+    df['Y_ECI'] = ((np.sin(solucao['raan'])*np.cos(solucao['arg_per']) + np.cos(solucao['raan'])*np.cos(solucao['inc'])*np.sin(solucao['arg_per']))*solucao['X_perifocal']
                         + (-np.sin(solucao['raan'])*np.sin(solucao['arg_per']) + np.cos(solucao['raan'])*np.cos(solucao['inc'])*np.cos(solucao['arg_per']))*solucao['Y_perifocal']
                         - np.cos(solucao['raan'])*np.sin(solucao['inc'])*solucao['Z_perifocal'])
-
-    solucao['Z_ECI'] = (np.sin(solucao['inc'])*np.sin(solucao['arg_per'])*solucao['X_perifocal']
+    df['Z_ECI'] = (np.sin(solucao['inc'])*np.sin(solucao['arg_per'])*solucao['X_perifocal']
                         + np.sin(solucao['inc'])*np.cos(solucao['arg_per'])*solucao['Y_perifocal']
                         + np.cos(solucao['inc'])*solucao['Z_perifocal'])
     '''import matplotlib.pyplot as plt
@@ -190,4 +185,4 @@ def propagador_orbital(semi_eixo, excentricidade, Raan, argumento_perigeu, anoma
     plt.show()
     solucao['final'] = 1
     solucao.to_csv('solver.csv',sep=',')'''
-    return solucao
+    return df

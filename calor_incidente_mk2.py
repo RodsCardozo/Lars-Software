@@ -391,20 +391,6 @@ H3 = []
 H4 = []
 H5 = []
 H6 = []
-i = 0
-k = 0
-A1 = np.array([(Posicao_orientacao.iloc[i, 9]), (Posicao_orientacao.iloc[i, 10]), (Posicao_orientacao.iloc[i, 11])])
-A2 = np.array([(Posicao_orientacao.iloc[i, 12]), (Posicao_orientacao.iloc[i, 13]), (Posicao_orientacao.iloc[i, 14])])
-A3 = np.array([(Posicao_orientacao.iloc[i, 15]), (Posicao_orientacao.iloc[i, 16]), (Posicao_orientacao.iloc[i, 17])])
-A4 = np.array([(Posicao_orientacao.iloc[i, 18]), (Posicao_orientacao.iloc[i, 19]), (Posicao_orientacao.iloc[i, 20])])
-A5 = np.array([(Posicao_orientacao.iloc[i, 21]), (Posicao_orientacao.iloc[i, 22]), (Posicao_orientacao.iloc[i, 23])])
-A6 = np.array([(Posicao_orientacao.iloc[i, 24]), (Posicao_orientacao.iloc[i, 25]), (Posicao_orientacao.iloc[i, 26])])
-rhok1 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k]) + (A1)
-rhok2 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k]) + (A2)
-rhok3 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k]) + (A3)
-rhok4 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k]) + (A4)
-rhok5 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k]) + (A5)
-rhok6 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k]) + (A6)
 
 print(rhok1)
 print(np.dot(rhok1, vetor_terra[k]))
