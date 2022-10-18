@@ -180,9 +180,9 @@ ai = 1.0
 T_orbita = periodo_orbital.periodo_orbital(rp)
 passo = 10000
 gama = 0.3
-PSIP = 0.0
+PSIP = (2 * np.pi) / T_orbita
 TETAP = 0.0
-PHIP = (2 * np.pi) / T_orbita
+PHIP = 0.0
 psi0 = 0.0
 teta0 = inc
 phi0 = true_anomaly
@@ -264,17 +264,17 @@ for j in range(0, len(Ni), 1):
       R = []
       Posicao_orientacao = pd.concat([Posicao_orientacao, df2], axis=1)
 print('Calculando icosaedro')
-nu = 20
+nu = 10
 vertices, faces = icosphere.icosphere(nu)
 center = []
 for i in range(0, len(faces), 1):
-    A = vertices[faces[i][0]]
-    B = vertices[faces[i][1]]
-    C = vertices[faces[i][2]]
+    A = vertices[faces[i][0]]*Raio_terra
+    B = vertices[faces[i][1]]*Raio_terra
+    C = vertices[faces[i][2]]*Raio_terra
     x = A[0] + B[0] + C[0]
     y = A[1] + B[1] + C[1]
     z = A[2] + B[2] + C[2]
-    center.append([x/3*Raio_terra, y/3*Raio_terra, z/3*Raio_terra])
+    center.append([x/3, y/3, z/3])
 
 As = area(vertices,faces, Raio_terra)
 vet_terra = pd.DataFrame(center, columns=['Terra_X', 'Terra_Y', 'Terra_Z'])

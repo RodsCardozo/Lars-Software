@@ -1,6 +1,7 @@
 import numpy as np
 import icosphere
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -35,18 +36,36 @@ def area(vertices, faces, Raio):
 
 nu = 10
 vertices, faces = icosphere.icosphere(nu)
+'''print((faces[0][0]))
+print(vertices)
+print((vertices[0][0]))
+print((vertices[5][0]))
+print((vertices[1][0]))'''
 center = []
 Raio_terra = 6371
+x = []
+y = []
+z = []
 for i in range(0, len(faces), 1):
-    A = vertices[faces[i][0]]*Raio_terra
-    B = vertices[faces[i][1]]*Raio_terra
-    C = vertices[faces[i][2]]*Raio_terra
-    x = A[0] + B[0] + C[0]
-    y = A[1] + B[1] + C[1]
-    z = A[2] + B[2] + C[2]
-    center.append([x/3, y/3, z/3])
+    a = faces[i][0]
+    b = faces[i][1]
+    c = faces[i][2]
+    A = vertices[a]*(Raio_terra)
+    B = vertices[b]*(Raio_terra)
+    C = vertices[c]*(Raio_terra)
+    x.append((A[0] + B[0] + C[0])/3)
+    y.append((A[1] + B[1] + C[1])/3)
+    z.append((A[2] + B[2] + C[2])/3)
+    center.append([x[i]/3, y[i]/3, z[i]/3])
 
-'''print(center)
+import plotly.graph_objects as go
+import numpy as np
+
+fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z,
+                                   mode='markers')])
+fig.show()
+
+'''
 from mpl_toolkits import mplot3d
 import numpy as np
 import matplotlib.pyplot as plt
@@ -69,13 +88,13 @@ plt.title("simple 3D scatter plot")
 
 # show plot
 plt.show()
-'''
+
 
 
 scale = 1
 vertices = vertices*scale
 
-'''faces = faces
+faces = faces
 fig = go.Figure()
 
 fig.add_trace(mesh_plot(vertices, faces))
@@ -83,4 +102,5 @@ fig.add_trace(wireframe_plot(vertices, faces));
 
 fig.update_layout(title_text='Icosphere', height=600, width=600)
 fig.show()
+
 '''

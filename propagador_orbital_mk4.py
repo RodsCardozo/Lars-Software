@@ -53,10 +53,10 @@ def propagador_orbital(data, semi_eixo, excentricidade, Raan, argumento_perigeu,
                 + (((-1/(2*r))*h*rho*velocidade*((CD*Area_transversal)/m) - 1.5*((J2*mu*R_terra**2)/r**4)*np.sin(inc)**2*np.sin(2*(arg_per
                 + anomalia_verdadeira)))/(mu*h))*((h**2 + mu*r)*np.cos(anomalia_verdadeira) + mu*ecc*r),
 
-                h/r**2 + ((h**2*np.cos(anomalia_verdadeira))/(mu*ecc*h))*((-1/(2*h))*mu*ecc*rho*velocidade*((CD*Area_transversal)/m)*np.sin(anomalia_verdadeira)
+                (h/r**2 + ((h**2*np.cos(anomalia_verdadeira))/(mu*ecc*h))*((-1/(2*h))*mu*ecc*rho*velocidade*((CD*Area_transversal)/m)*np.sin(anomalia_verdadeira)
                 - 1.5*((J2*mu*R_terra**2)/r**4)*(1 - 3*np.sin(inc)**2*np.sin(arg_per + anomalia_verdadeira)**2))
                 - (r + h**2/mu)*(np.sin(anomalia_verdadeira)/(ecc*h))*((-1/(2*r))*h*rho*velocidade*((CD*Area_transversal)/m)
-                - 1.5 * (J2*mu*R_terra**2)/r**4 * np.sin(inc)**2 * np.sin(2*(arg_per + anomalia_verdadeira))),
+                - (1.5 * (J2*mu*R_terra**2)/r**4) * np.sin(inc)**2 * np.sin(2*(arg_per + anomalia_verdadeira)))),
 
                 (r/(h*np.sin(inc)))*np.sin(arg_per + anomalia_verdadeira)*(- 1.5*((J2*mu*R_terra**2)/r**4)*np.sin(2*inc)*np.sin(arg_per + anomalia_verdadeira)),
 
@@ -65,7 +65,7 @@ def propagador_orbital(data, semi_eixo, excentricidade, Raan, argumento_perigeu,
                 (-1/(ecc*h))*((h**2/mu)*np.cos(anomalia_verdadeira)*((-1/(2*h))*mu*ecc*rho*velocidade*((CD*Area_transversal)/m)*np.sin(anomalia_verdadeira)
                 - 1.5*((J2*mu*R_terra**2)/r**4)*(1 - 3*np.sin(inc)**2*np.sin(arg_per + anomalia_verdadeira)**2))
                 - (r + h**2/mu)*np.sin(anomalia_verdadeira)*((-1/(2*r))*h*rho*velocidade*((CD*Area_transversal)/m)
-                - 1.5 * (J2*mu*R_terra**2)/r**4 * np.sin(inc)**2 * np.sin(2*(arg_per + anomalia_verdadeira))))
+                - 1.5 * ((J2*mu*R_terra**2)/r**4) * np.sin(inc)**2 * np.sin(2*(arg_per + anomalia_verdadeira))))
                 - ((r*np.sin(arg_per + anomalia_verdadeira))/(h*np.tan(inc)))*(- 1.5 * (J2*mu*R_terra**2)/r**4 * np.sin(2*inc) * np.sin(arg_per + anomalia_verdadeira)),
 
                 0.5 * (q0 * 0 - q1 * wx3 - q2 * wy3 - q3 * wz3),
@@ -90,6 +90,7 @@ def propagador_orbital(data, semi_eixo, excentricidade, Raan, argumento_perigeu,
     Raan0 = np.radians(float(Raan))  # ascencao direita do nodo ascendente
     arg_per0 = np.radians(float(argumento_perigeu))  # argumento do perigeu
     true_anomaly0 = np.radians(float(anomalia_verdadeira))  # anomalia verdadeira
+
     inc0 = np.radians(float(inclinacao))  # inclinacao
     T_orb = periodo_orbital(Rp)
     mu = 398600
@@ -119,19 +120,19 @@ def propagador_orbital(data, semi_eixo, excentricidade, Raan, argumento_perigeu,
     mu = 398600
     J2 = 1.08263e-3
     R_terra = 6371
-    Time_step = 1
-    passo = int(Time_step/delt)
+    Time_step = delt
+    passo = 10000
     ini_date = data
     n = num_orbitas
     T = T_orb*n
     t = np.linspace(0, Time_step, passo)
     solution = []
-    posicao = rp0
+    posicao = (h0**2/mu)*(1/(1-ecc0*np.cos(true_anomaly0)))
     while delt < T:
         qi = [h0, ecc0, true_anomaly0, Raan0, inc0, arg_per0, q0, q1, q2, q3, wx3_i, wy3_i, wz3_i]
         altitude = rp0 - R_terra
         Rho = rho(ini_date, altitude, 0, 0)
-        velocidade = np.sqrt(mu/rp0)*1000
+        velocidade = (mu/h0)*np.sqrt(np.sin(true_anomaly0)**2 + (ecc0 + np.cos(true_anomaly0))**2)*1000
         massa = 3.0
         CD = 2.2
         Area_transversal = 0.1*0.1
@@ -162,15 +163,22 @@ def propagador_orbital(data, semi_eixo, excentricidade, Raan, argumento_perigeu,
     solucao['distancia'] = np.sqrt(solucao['X_perifocal']**2 + solucao['Y_perifocal']**2)
 
     df = pd.DataFrame()
-    df['PSI'] = np.arctan2(2*(solucao['q2']*solucao['q3'] - solucao['q0']*solucao['q1']), 2*(solucao['q1']*solucao['q3'] + solucao['q0']*solucao['q2']))
+    df['PHI'] = np.arctan2(2*(solucao['q2']*solucao['q3'] - solucao['q0']*solucao['q1']), 2*(solucao['q1']*solucao['q3'] + solucao['q0']*solucao['q2']))
     df['TETA'] = np.arccos(2*(solucao['q0']**2 + solucao['q3']**2) - 1)
-    df['PHI'] = np.arctan2(-2*(solucao['q2']*solucao['q3'] + solucao['q0']*solucao['q1']), 2*(solucao['q1']*solucao['q3'] - solucao['q0']*solucao['q2']) )
+    df['PSI'] = np.arctan2(-2*(solucao['q2']*solucao['q3'] + solucao['q0']*solucao['q1']), 2*(solucao['q1']*solucao['q3'] - solucao['q0']*solucao['q2']) )
+
     df['X_ECI'] = ((np.cos(solucao['raan'])*np.cos(solucao['arg_per']) - np.sin(solucao['raan'])*np.sin(solucao['arg_per'])*np.cos(solucao['inc']))*solucao['X_perifocal']
+
                         + (-np.cos(solucao['raan'])*np.sin(solucao['arg_per']) - np.sin(solucao['raan'])*np.cos(solucao['inc'])*np.cos(solucao['arg_per']))*solucao['Y_perifocal']
+
                         + np.sin(solucao['raan'])*np.sin(solucao['inc'])*solucao['Z_perifocal'])
+
     df['Y_ECI'] = ((np.sin(solucao['raan'])*np.cos(solucao['arg_per']) + np.cos(solucao['raan'])*np.cos(solucao['inc'])*np.sin(solucao['arg_per']))*solucao['X_perifocal']
+
                         + (-np.sin(solucao['raan'])*np.sin(solucao['arg_per']) + np.cos(solucao['raan'])*np.cos(solucao['inc'])*np.cos(solucao['arg_per']))*solucao['Y_perifocal']
+
                         - np.cos(solucao['raan'])*np.sin(solucao['inc'])*solucao['Z_perifocal'])
+
     df['Z_ECI'] = (np.sin(solucao['inc'])*np.sin(solucao['arg_per'])*solucao['X_perifocal']
                         + np.sin(solucao['inc'])*np.cos(solucao['arg_per'])*solucao['Y_perifocal']
                         + np.cos(solucao['inc'])*solucao['Z_perifocal'])
@@ -179,11 +187,11 @@ def propagador_orbital(data, semi_eixo, excentricidade, Raan, argumento_perigeu,
     from mpl_toolkits.mplot3d import Axes3D
     fig = plt.figure()
     ax = plt.axes(projection="3d")
-    a1 = ax.scatter3D(solucao['X_ECI'], solucao['Y_ECI'], solucao['Z_ECI'])
+    a1 = ax.scatter3D(solucao['X_perifocal'], solucao['Y_perifocal'], solucao['Z_perifocal'])
     ax.set_xlabel('x [km]')
     ax.set_ylabel('y [km]')
     ax.set_zlabel('z [km]')
     plt.show()
-    solucao['final'] = 1
-    solucao.to_csv('solver.csv',sep=',')'''
+    solucao['final'] = 1'''
+    solucao.to_csv('solver.csv',sep=',')
     return df

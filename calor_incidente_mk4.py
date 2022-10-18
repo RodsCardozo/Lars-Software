@@ -27,7 +27,7 @@ Ib = (m / 12) * (a ** 2 + c ** 2)  # momento de inercia na direcao y
 Ic = (m / 12) * (a ** 2 + b ** 2)  # momento de inercia na direcao z
 
 rp = 7000  # semi eixo maior
-ecc = float(0.0001)  # ecentricidade da orbita
+ecc = float(0.01)  # ecentricidade da orbita
 Raan = float(0.0)  # ascencao direita do nodo ascendente
 arg_per = (float(0.0))  # argumento do perigeu
 true_anomaly = (float(0.0))  # anomalia verdadeira
@@ -51,12 +51,12 @@ psi0 = 0.0
 teta0 = inc
 phi0 = 0.0
 data = datetime(2022, 5, 10, 18, 0, 0)
-delt = 1
+delt = 10
 prop_orb = propagador_orbital(data, rp, ecc, Raan, arg_per, true_anomaly, inc, 1, delt, psi0, teta0, phi0, PSIP, TETAP,
                               PHIP)
 
 Vs = np.array([1, 0, 0])
-nu = 10
+nu = 20
 vertices, faces = icosphere.icosphere(nu)
 center = []
 for i in range(0, len(faces), 1):
@@ -99,9 +99,9 @@ for j in range(0, len(Ni), 1):
         A = np.array([Posicao_orientacao.iloc[j, 6],
                       Posicao_orientacao.iloc[j, 7],
                       Posicao_orientacao.iloc[j, 8]])
-        psi = Posicao_orientacao.iloc[i, 0]
+        psi = Posicao_orientacao.iloc[i, 2]
         teta = Posicao_orientacao.iloc[i, 1]
-        phi = Posicao_orientacao.iloc[i, 2]
+        phi = Posicao_orientacao.iloc[i, 0]
 
         vetor = A
 
@@ -152,8 +152,8 @@ for i in range(0, len(prop_orb), 1):
     vetor_posicao.append(np.array([np.array(Posicao_orientacao.iloc[i, 3]), np.array(Posicao_orientacao.iloc[i, 4]),
                   np.array(Posicao_orientacao.iloc[i, 5])]))
 print(len(vetor_posicao))
-
-'''Radiacao incidente do sol'''
+df1 = pd.DataFrame(vetor_terra)
+df2 = pd.DataFrame(vetor_terra)
 
 print('Calculando radiacao solar')
 Qs1 = []
@@ -275,12 +275,12 @@ for i in tqdm(range(0, len(vetor_posicao), 1), colour='green'):
 
         # rho =   np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
 
-        rhok1 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k])
-        rhok2 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k])
-        rhok3 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k])
-        rhok4 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k])
-        rhok5 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k])
-        rhok6 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k])
+        rhok1 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k]) + A1
+        rhok2 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k]) + A2
+        rhok3 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k]) + A3
+        rhok4 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k]) + A4
+        rhok5 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k]) + A5
+        rhok6 = np.array(vetor_posicao[i]) - np.array(vetor_terra[k]) + A6
 
         # As = np.array([Posicao_orientacao.iloc[k][31]])
         C_bek = np.dot(Vs, vetor_terra[k]) / (np.linalg.norm(Vs) * np.linalg.norm(vetor_terra[k]))
@@ -424,13 +424,13 @@ for i in tqdm(range(0, len(vetor_posicao), 1), colour='cyan'):
         [(Posicao_orientacao.iloc[i, 24]), (Posicao_orientacao.iloc[i, 25]), (Posicao_orientacao.iloc[i, 26])])
     for k in range(0, len(vetor_terra), 1):
 
-        rho = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
-        Rhok1 = rho + np.array(A1)
-        Rhok2 = rho + np.array(A2)
-        Rhok3 = rho + np.array(A3)
-        Rhok4 = rho + np.array(A4)
-        Rhok5 = rho + np.array(A5)
-        Rhok6 = rho + np.array(A6)
+        #rho = (-np.array(vetor_posicao[i]) + np.array(vetor_terra[k])) + A1
+        Rhok1 = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k])) + A1
+        Rhok2 = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k])) + A2
+        Rhok3 = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k])) + A3
+        Rhok4 = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k])) + A4
+        Rhok5 = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k])) + A5
+        Rhok6 = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k])) + A6
 
         if np.dot(Rhok1, vetor_terra[k]) > 0:
 
@@ -542,29 +542,66 @@ for i in tqdm(range(0, len(vetor_posicao), 1), colour='cyan'):
 rad_sol = []
 for i in range(0, len(Qs1), 1):
     rad_sol.append([Qs1[i], Qs2[i], Qs3[i], Qs4[i], Qs5[i], Qs6[i]])
-
+print(len(rad_sol))
 Q_sol = pd.DataFrame(rad_sol, columns=['Qs1', 'Qs2', 'Qs3', 'Qs4', 'Qs5', 'Qs6'])
 
 rad_alb = []
 for i in range(0, len(Qalb1), 1):
     rad_alb.append([Qalb1[i], Qalb2[i], Qalb3[i], Qalb4[i], Qalb5[i], Qalb6[i]])
 Q_alb = pd.DataFrame(rad_alb, columns=['Qalb1', 'Qalb2', 'Qalb3', 'Qalb4', 'Qalb5', 'Qalb6'])
-
+print(len(rad_alb))
 rad_terra = []
 for i in range(0, len(Qrad1), 1):
     rad_terra.append([Qrad1[i], Qrad2[i], Qrad3[i], Qrad4[i], Qrad5[i], Qrad6[i]])
 Q_terra = pd.DataFrame(rad_terra, columns=['Qrad1', 'Qrad2', 'Qrad3', 'Qrad4', 'Qrad5', 'Qrad6'])
-
+print(len(rad_terra))
 print('Terminando calculo')
+
+T = np.linspace(0, len(vetor_posicao), len(vetor_posicao))
+plt.xlabel("Ponto da orbita")
+plt.ylabel("Calor incidente em cada face [W/m^2]")
+plt.plot(T, Q_sol['Qs1'], color='green', label='N1')
+plt.plot(T, Q_sol['Qs2'], color='blue', label='N2')
+plt.plot(T, Q_sol['Qs3'], color='cyan', label='N3')
+plt.plot(T, Q_sol['Qs4'], color='yellow', label='N4')
+plt.plot(T, Q_sol['Qs5'], color='red', label='N5')
+plt.plot(T, Q_sol['Qs6'], color='magenta', label='N6')
+plt.legend()
+plt.show()
+
+T = np.linspace(0, len(vetor_posicao), len(vetor_posicao))
+plt.xlabel("Ponto da orbita")
+plt.ylabel("Calor incidente em cada face [W/m^2]")
+plt.plot(T, Q_alb['Qalb1'], color='green', label='N1')
+plt.plot(T, Q_alb['Qalb2'], color='blue', label='N2')
+plt.plot(T, Q_alb['Qalb3'], color='cyan', label='N3')
+plt.plot(T, Q_alb['Qalb4'], color='yellow', label='N4')
+plt.plot(T, Q_alb['Qalb5'], color='red', label='N5')
+plt.plot(T, Q_alb['Qalb6'], color='magenta', label='N6')
+plt.legend()
+plt.show()
+
+T = np.linspace(0, len(vetor_posicao), len(vetor_posicao))
+plt.xlabel("Ponto da orbita")
+plt.ylabel("Calor incidente em cada face [W/m^2]")
+plt.plot(T, Q_terra['Qrad1'], color='green', label='N1')
+plt.plot(T, Q_terra['Qrad2'], color='blue', label='N2')
+plt.plot(T, Q_terra['Qrad3'], color='cyan', label='N3')
+plt.plot(T, Q_terra['Qrad4'], color='yellow', label='N4')
+plt.plot(T, Q_terra['Qrad5'], color='red', label='N5')
+plt.plot(T, Q_terra['Qrad6'], color='magenta', label='N6')
+plt.legend()
+plt.show()
+
 
 QT = pd.concat([Q_sol, Q_alb], axis=1)
 QT = pd.concat([QT, Q_terra], axis=1)
-QT['N1'] = QT['Qs1'] #+ QT['Qalb1'] + QT['Qrad1']
-QT['N2'] = QT['Qs2'] #+ QT['Qalb2'] + QT['Qrad2']
-QT['N3'] = QT['Qs3'] #+ QT['Qalb3'] + QT['Qrad3']
-QT['N4'] = QT['Qs4'] #+ QT['Qalb4'] + QT['Qrad4']
-QT['N5'] = QT['Qs5'] #+ QT['Qalb5'] + QT['Qrad5']
-QT['N6'] = QT['Qs6'] #+ QT['Qalb6'] + QT['Qrad6']
+QT['N1'] = QT['Qs1'] + QT['Qalb1'] + QT['Qrad1']
+QT['N2'] = QT['Qs2'] + QT['Qalb2'] + QT['Qrad2']
+QT['N3'] = QT['Qs3'] + QT['Qalb3'] + QT['Qrad3']
+QT['N4'] = QT['Qs4'] + QT['Qalb4'] + QT['Qrad4']
+QT['N5'] = QT['Qs5'] + QT['Qalb5'] + QT['Qrad5']
+QT['N6'] = QT['Qs6'] + QT['Qalb6'] + QT['Qrad6']
 QT.to_csv('calor.csv', sep=',')
 T = np.linspace(0, len(vetor_posicao), len(vetor_posicao))
 plt.xlabel("Ponto da orbita")
