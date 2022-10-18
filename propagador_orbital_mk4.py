@@ -90,16 +90,15 @@ def propagador_orbital(data, semi_eixo, excentricidade, Raan, argumento_perigeu,
     Raan0 = np.radians(float(Raan))  # ascencao direita do nodo ascendente
     arg_per0 = np.radians(float(argumento_perigeu))  # argumento do perigeu
     true_anomaly0 = np.radians(float(anomalia_verdadeira))  # anomalia verdadeira
-
     inc0 = np.radians(float(inclinacao))  # inclinacao
     T_orb = periodo_orbital(Rp)
     mu = 398600
     J2 = 1.08263e-3
     R_terra = 6371
     h0 = np.sqrt(rp0*mu*(1 - ecc0))
-    psi = float(psi)  # angulo inicial de PSI
-    teta = float(teta)  # angulo inicial de TETA
-    phi = float(phi)  # angulo inicial de PHI
+    psi = float(np.radians(psi))  # angulo inicial de PSI
+    teta = float(np.radians(teta))  # angulo inicial de TETA
+    phi = float(np.radians(phi))  # angulo inicial de PHI
     psip = float(psip)  # velocidade angular do angulo PSI
     tetap = float(tetap)  # velocidade angular do angulo TETA
     phip = phip  # velocidade angular do angulo PHI
@@ -132,7 +131,7 @@ def propagador_orbital(data, semi_eixo, excentricidade, Raan, argumento_perigeu,
         qi = [h0, ecc0, true_anomaly0, Raan0, inc0, arg_per0, q0, q1, q2, q3, wx3_i, wy3_i, wz3_i]
         altitude = rp0 - R_terra
         Rho = rho(ini_date, altitude, 0, 0)
-        velocidade = (mu/h0)*np.sqrt(np.sin(true_anomaly0)**2 + (ecc0 + np.cos(true_anomaly0))**2)*1000
+        velocidade = (mu/h0)*np.sqrt(np.sin(true_anomaly0)**2 + (ecc0 + np.cos(true_anomaly0))**2)
         massa = 3.0
         CD = 2.2
         Area_transversal = 0.1*0.1
@@ -163,9 +162,9 @@ def propagador_orbital(data, semi_eixo, excentricidade, Raan, argumento_perigeu,
     solucao['distancia'] = np.sqrt(solucao['X_perifocal']**2 + solucao['Y_perifocal']**2)
 
     df = pd.DataFrame()
-    df['PHI'] = np.arctan2(2*(solucao['q2']*solucao['q3'] - solucao['q0']*solucao['q1']), 2*(solucao['q1']*solucao['q3'] + solucao['q0']*solucao['q2']))
+    df['PHI'] = np.unwrap(np.arctan2(2*(solucao['q2']*solucao['q3'] - solucao['q0']*solucao['q1']), 2*(solucao['q1']*solucao['q3'] + solucao['q0']*solucao['q2'])))
     df['TETA'] = np.arccos(2*(solucao['q0']**2 + solucao['q3']**2) - 1)
-    df['PSI'] = np.arctan2(-2*(solucao['q2']*solucao['q3'] + solucao['q0']*solucao['q1']), 2*(solucao['q1']*solucao['q3'] - solucao['q0']*solucao['q2']) )
+    df['PSI'] = np.unwrap(np.arctan2(-2*(solucao['q2']*solucao['q3'] + solucao['q0']*solucao['q1']), 2*(solucao['q1']*solucao['q3'] - solucao['q0']*solucao['q2']) ))
 
     df['X_ECI'] = ((np.cos(solucao['raan'])*np.cos(solucao['arg_per']) - np.sin(solucao['raan'])*np.sin(solucao['arg_per'])*np.cos(solucao['inc']))*solucao['X_perifocal']
 

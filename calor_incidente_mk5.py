@@ -1,8 +1,3 @@
-import sup_terra
-import terra
-import teste
-
-
 def area(vertices, faces, Raio):
     import numpy as np
     a1 = vertices[faces[0][0]] * Raio
@@ -11,18 +6,7 @@ def area(vertices, faces, Raio):
     e = np.linalg.norm(a)
     A = ((3) ** (1 / 2) / 2) * e ** 2
     return A
-def area2(vertices, faces, Raio):
-    import numpy as np
-    A = vertices[faces[0][0]] * Raio
-    B = vertices[faces[0][1]] * Raio
-    C = vertices[faces[0][2]] * Raio
-    AB = B - A
-    AC = C - A
-    d = np.linalg.norm(np.cross(AB, AC))
-    return d/2
 
-
-import numpy as np
 import matplotlib.pyplot as plt
 import periodo_orbital
 from propagador_orbital_mk4 import propagador_orbital
@@ -31,6 +15,8 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
+''' Dados iniciais da orbita '''
+# dados do cubesat
 m = float(3)  # massa do cubesat
 a = float(0.1)  # comprimento do sat
 b = float(0.1)  # largura do sat
@@ -40,24 +26,19 @@ Ia = (m / 12) * (b ** 2 + c ** 2)  # momento de inercia na direcao x
 Ib = (m / 12) * (a ** 2 + c ** 2)  # momento de inercia na direcao y
 Ic = (m / 12) * (a ** 2 + b ** 2)  # momento de inercia na direcao z
 
+# orbtia a ser analisada
+
 rp = 7000  # semi eixo maior
 ecc = float(0.01)  # ecentricidade da orbita
 Raan = float(0.01)  # ascencao direita do nodo ascendente
 arg_per = (float(0.01))  # argumento do perigeu
 true_anomaly = (float(0.01))  # anomalia verdadeira
-inc = (float(51.0))  # inclinacao
+inc = (float(50))  # inclinacao
 mu = 398600  # constante gravitacional da terra
 J2 = 1.08263e-3  # zona harmonica 2
 Raio_terra = float(6371)  # raio da terra
 num_orbita = 1  # numero de obitas
-Is = 1367.0
-Ir = 267.0
-e = 1.0
-ai = 1.0
 T_orbita = periodo_orbital.periodo_orbital(rp)
-
-passo = 10000
-gama = 0.3
 PSIP = 0.0
 TETAP = 0.0
 PHIP = (2 * np.pi) / T_orbita
@@ -66,9 +47,21 @@ teta0 = inc
 phi0 = true_anomaly
 data = datetime(2022, 5, 10, 18, 0, 0)
 delt = 10
-prop_orb = propagador_orbital(data, rp, ecc, Raan, arg_per, true_anomaly, inc, 1, delt, psi0, teta0, phi0, PSIP, TETAP, PHIP)
-Vs = np.array([1, 0, 0])
-nu = 30
+prop_orb = propagador_orbital(data, rp, ecc, Raan, arg_per, true_anomaly, inc, 1, delt, psi0, teta0, phi0, PSIP, TETAP,
+                              PHIP) # propagador orbital
+
+# Intensidade radiante do sol e terra e valores de emissividade
+Is = 1367.0
+Ir = 267.0
+e = 1.0
+ai = 1.0
+gama = 0.3
+
+Vs = np.array([1, 0, 0]) # vetor solar
+
+# divisao da terra em elementos de area utilizando um icosaedro
+
+nu = 10
 vertices, faces = icosphere.icosphere(nu)
 center = []
 for i in range(0, len(faces), 1):
@@ -82,12 +75,11 @@ for i in range(0, len(faces), 1):
     y = float(A[1] + B[1] + C[1])
     z = float(A[2] + B[2] + C[2])
     center.append([x / 3, y / 3, z / 3])
-As = 510100000/len(center) #(vertices, faces, Raio_terra)
+As = 510100000/len(center) # area de cada elemento
 print(len(faces))
 print(len(vertices))
 print(As)
 vet_terra = pd.DataFrame(center, columns=['Terra_X', 'Terra_Y', 'Terra_Z'])
-
 Ai = [a * c,
       b * c,
       a * c,
@@ -102,6 +94,9 @@ Ni = [[1, 0, 0],
       [0, 0, 1]]
 df1 = pd.DataFrame(Ni, columns=['x', 'y', 'z'])
 Posicao_orientacao = pd.concat([prop_orb, df1], axis=1)
+
+# determinacao da orientacao de cada face
+
 names = [['N1_X', 'N1_Y', 'N1_Z'],
          ['N2_X', 'N2_Y', 'N2_Z'],
          ['N3_X', 'N3_Y', 'N3_Z'],
@@ -114,6 +109,7 @@ for j in range(0, len(Ni), 1):
         A = np.array([Posicao_orientacao.iloc[j, 6],
                       Posicao_orientacao.iloc[j, 7],
                       Posicao_orientacao.iloc[j, 8]])
+
         psi = Posicao_orientacao.iloc[i, 2]
         teta = Posicao_orientacao.iloc[i, 1]
         phi = Posicao_orientacao.iloc[i, 0]
@@ -123,7 +119,8 @@ for j in range(0, len(Ni), 1):
         Q_rot = np.array([[np.cos(psi)*np.cos(phi) - np.sin(psi)*np.sin(phi)*np.cos(teta), np.cos(psi)*np.sin(phi) + np.sin(psi)*np.cos(teta)*np.cos(phi), np.sin(psi)*np.sin(teta)],
                           [-np.sin(psi)*np.cos(phi) - np.cos(psi)*np.sin(phi)*np.cos(teta), -np.sin(psi)*np.sin(phi) + np.cos(psi)*np.cos(teta)*np.cos(phi), np.cos(psi)*np.sin(teta)],
                           [np.sin(teta)*np.sin(phi), -np.sin(teta)*np.cos(phi), np.cos(teta)]])
-        Q = np.dot(np.transpose(Q_rot),vetor)
+        Q = np.dot(np.transpose(Q_rot), vetor)
+
         R1 = Q[0]
         R2 = Q[1]
         R3 = Q[2]
@@ -133,24 +130,23 @@ for j in range(0, len(Ni), 1):
     R = []
     Posicao_orientacao = pd.concat([Posicao_orientacao, df2], axis=1)
 Posicao_orientacao.to_csv('posicao.csv', sep=',')
-
 Posicao_orientacao = pd.concat([Posicao_orientacao, vet_terra], axis=1)
-
 Posicao_orientacao['final'] = 1
 Posicao_orientacao.to_csv('posicao.csv', sep=',')
 
 vetor_terra = []
 for i in range(0, len(vet_terra), 1):
     vetor_terra.append(np.array([(vet_terra.iloc[i, 0]), (vet_terra.iloc[i, 1]), (vet_terra.iloc[i, 2])]))
-
+print(len(vetor_terra))
 vetor_posicao = []
 for i in range(0, len(prop_orb), 1):
     vetor_posicao.append(np.array([np.array(Posicao_orientacao.iloc[i, 3]), np.array(Posicao_orientacao.iloc[i, 4]),
                   np.array(Posicao_orientacao.iloc[i, 5])]))
-
+print(len(vetor_posicao))
 df1 = pd.DataFrame(vetor_terra)
 df2 = pd.DataFrame(vetor_terra)
 
+'''Inicio do calculo de radiacao'''
 print('Calculando radiacao solar')
 Qs1 = []
 Qs2 = []
@@ -228,6 +224,7 @@ for i in range(0, len(vetor_posicao), 1):
         Qs6.append(0)
 
 '''Radiacao de albedo incidente'''
+
 print('Calculando radiacao de albedo')
 
 Halb1 = 0
@@ -244,30 +241,30 @@ Qalb4 = []
 Qalb5 = []
 Qalb6 = []
 
-H1 = []
-H2 = []
-H3 = []
-H4 = []
-H5 = []
-H6 = []
-
 from tqdm import tqdm
 
 for i in tqdm(range(0, len(vetor_posicao), 1), colour='green'):
-    A1 = [(Posicao_orientacao.iloc[i, 9]), (Posicao_orientacao.iloc[i, 10]), (Posicao_orientacao.iloc[i, 11])]
-    A2 = [(Posicao_orientacao.iloc[i, 12]), (Posicao_orientacao.iloc[i, 13]), (Posicao_orientacao.iloc[i, 14])]
-    A3 = [(Posicao_orientacao.iloc[i, 15]), (Posicao_orientacao.iloc[i, 16]), (Posicao_orientacao.iloc[i, 17])]
-    A4 = [(Posicao_orientacao.iloc[i, 18]), (Posicao_orientacao.iloc[i, 19]), (Posicao_orientacao.iloc[i, 20])]
-    A5 = [(Posicao_orientacao.iloc[i, 21]), (Posicao_orientacao.iloc[i, 22]), (Posicao_orientacao.iloc[i, 23])]
-    A6 = [(Posicao_orientacao.iloc[i, 24]), (Posicao_orientacao.iloc[i, 25]), (Posicao_orientacao.iloc[i, 26])]
+    A1 = np.array([np.array(Posicao_orientacao.iloc[i][9]), np.array(Posicao_orientacao.iloc[i][10]),
+                   np.array(Posicao_orientacao.iloc[i][11])])
+    A2 = np.array([np.array(Posicao_orientacao.iloc[i][12]), np.array(Posicao_orientacao.iloc[i][13]),
+                   np.array(Posicao_orientacao.iloc[i][14])])
+    A3 = np.array([np.array(Posicao_orientacao.iloc[i][15]), np.array(Posicao_orientacao.iloc[i][16]),
+                   np.array(Posicao_orientacao.iloc[i][17])])
+    A4 = np.array([np.array(Posicao_orientacao.iloc[i][18]), np.array(Posicao_orientacao.iloc[i][19]),
+                   np.array(Posicao_orientacao.iloc[i][20])])
+    A5 = np.array([np.array(Posicao_orientacao.iloc[i][21]), np.array(Posicao_orientacao.iloc[i][22]),
+                   np.array(Posicao_orientacao.iloc[i][23])])
+    A6 = np.array([np.array(Posicao_orientacao.iloc[i][24]), np.array(Posicao_orientacao.iloc[i][25]),
+                   np.array(Posicao_orientacao.iloc[i][26])])
 
     for k in range(0, len(vetor_terra), 1):
 
-        TETA = np.arccos(Raio_terra/np.linalg.norm(vetor_posicao[i]))
-        A = np.arccos(np.dot(vetor_posicao[i], vetor_terra[k])/(np.linalg.norm(vetor_posicao[i]) * np.linalg.norm(vetor_terra[k])))
+        TETA = np.arccos(Raio_terra / np.linalg.norm(vetor_posicao[i]))
+        A = np.arccos(
+            np.dot(vetor_posicao[i], vetor_terra[k]) / (
+                    np.linalg.norm(vetor_posicao[i]) * np.linalg.norm(vetor_terra[k])))
 
         if TETA > A > -TETA:
-
             # rho =   np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
 
             rhok1 = vetor_posicao[i] - vetor_terra[k] + A1
@@ -280,78 +277,93 @@ for i in tqdm(range(0, len(vetor_posicao), 1), colour='green'):
             # As = np.array([Posicao_orientacao.iloc[k][31]])
             C_bek = np.dot(Vs, vetor_terra[k]) / (np.linalg.norm(Vs) * np.linalg.norm(vetor_terra[k]))
 
-            C_aek1 = np.dot(rhok1, vetor_terra[k]) / (np.linalg.norm(rhok1) * np.linalg.norm(vetor_terra[k]))
-            C_aik1 = (np.dot(-rhok1, A1)) / (np.linalg.norm(rhok1) * np.linalg.norm(A1))
+            if np.dot(rhok1, vetor_terra[k]) > 0:
+                C_aek1 = np.dot(rhok1/ np.linalg.norm(rhok1), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
+                C_aik1 = np.dot(-rhok1/np.linalg.norm(rhok1), A1)
 
-            if C_aik1 >= 0 and C_aek1 >= 0 and C_bek >= 0:
+                if C_aik1 > 0 and C_aek1 > 0 and C_bek > 0:
+                    Balb = float(1.0)
+                    Halb1 = Halb1 + (As * ((C_aek1 * C_bek * C_aik1) / (np.pi * np.linalg.norm(rhok1) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
 
-                Balb = float(1.0)
-                Halb1 = Halb1 + (As * ((C_aek1 * C_bek * C_aik1) / (np.pi * np.linalg.norm(rhok1) ** 2)) * Balb)
+                    Halb1 = Halb1 + (As * ((C_aek1 * C_bek * C_aik1) / (np.pi * np.linalg.norm(rhok1) ** 2)) * Balb)
 
-            else:
-                Balb = float(0.0)
-                Halb1 = Halb1 + (As * ((C_aek1 * C_bek * C_aik1) / (np.pi * np.linalg.norm(rhok1) ** 2)) * Balb)
+            if np.dot(rhok2, vetor_terra[k]) > 0:
 
-            C_aek2 = np.dot(rhok2, vetor_terra[k]) / (np.linalg.norm(rhok2) * np.linalg.norm(vetor_terra[k]))
-            C_aik2 = (np.dot(-rhok2, A2)) / (np.linalg.norm(rhok2) * np.linalg.norm(A2))
+                C_aek2 = np.dot(rhok2/ np.linalg.norm(rhok2), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
+                C_aik2 = np.dot(-rhok2/np.linalg.norm(rhok2), A2)
 
-            if C_aik2 >= 0 and C_aek2 >= 0 and C_bek >= 0:
+                if C_aik2 > 0 and C_aek2 > 0 and C_bek > 0:
 
-                Balb = float(1.0)
-                Halb2 = Halb2 + (As * ((C_aek2 * C_bek * C_aik2) / (np.pi * np.linalg.norm(rhok2) ** 2)) * Balb)
-            else:
-                Balb = float(0.0)
-                Halb2 = Halb2 + (As * ((C_aek2 * C_bek * C_aik2) / (np.pi * np.linalg.norm(rhok2) ** 2)) * Balb)
+                    Balb = float(1.0)
 
-            C_aek3 = np.dot(rhok3, vetor_terra[k]) / (np.linalg.norm(rhok3) * np.linalg.norm(vetor_terra[k]))
-            C_aik3 = (np.dot(-rhok3, A3)) / (np.linalg.norm(rhok3) * np.linalg.norm(A3))
+                    Halb2 = Halb2 + (As * ((C_aek2 * C_bek * C_aik2) / (np.pi * np.linalg.norm(rhok2) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
 
-            if C_aik3 >= 0 and C_aek3 >= 0 and C_bek >= 0:
+                    Halb2 = Halb2 + (As * ((C_aek2 * C_bek * C_aik2) / (np.pi * np.linalg.norm(rhok2) ** 2)) * Balb)
 
-                Balb = float(1.0)
-                Halb3 = Halb3 + (As * ((C_aek3 * C_bek * C_aik3) / (np.pi * np.linalg.norm(rhok3) ** 2)) * Balb)
+            if np.dot(rhok3, vetor_terra[k]) > 0:
 
-            else:
-                Balb = float(0.0)
-                Halb3 = Halb3 + (As * ((C_aek3 * C_bek * C_aik3) / (np.pi * np.linalg.norm(rhok3) ** 2)) * Balb)
+                C_aek3 = np.dot(rhok3/np.linalg.norm(rhok3), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
+                C_aik3 = np.dot(-rhok3/np.linalg.norm(rhok3), A3)
 
-            C_aek4 = np.dot(rhok4, vetor_terra[k]) / (np.linalg.norm(rhok4) * np.linalg.norm(vetor_terra[k]))
-            C_aik4 = (np.dot(-rhok4, A4)) / (np.linalg.norm(rhok4) * np.linalg.norm(A4))
+                if C_aik3 > 0 and C_aek3 > 0 and C_bek > 0:
 
-            if C_aik4 >= 0 and C_aek4 >= 0 and C_bek >= 0:
+                    Balb = float(1.0)
 
-                Balb = float(1.0)
-                Halb4 = Halb4 + (As * ((C_aek4 * C_bek * C_aik4) / (np.pi * np.linalg.norm(rhok4) ** 2)) * Balb)
+                    Halb3 = Halb3 + (As * ((C_aek3 * C_bek * C_aik3) / (np.pi * np.linalg.norm(rhok3) ** 2)) * Balb)
 
-            else:
-                Balb = float(0.0)
-                Halb4 = Halb4 + (As * ((C_aek4 * C_bek * C_aik4) / (np.pi * np.linalg.norm(rhok4) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
 
-            C_aek5 = np.dot(rhok5, vetor_terra[k]) / (np.linalg.norm(rhok5) * np.linalg.norm(vetor_terra[k]))
-            C_aik5 = (np.dot(-rhok5, A5)) / (np.linalg.norm(rhok5) * np.linalg.norm(A5))
+                    Halb3 = Halb3 + (As * ((C_aek3 * C_bek * C_aik3) / (np.pi * np.linalg.norm(rhok3) ** 2)) * Balb)
 
-            if C_aik5 >= 0 and C_aek5 >= 0 and C_bek >= 0:
+            if np.dot(rhok4, vetor_terra[k]) > 0:
 
-                Balb = float(1.0)
-                Halb5 = Halb5 + (As * ((C_aek5 * C_bek * C_aik5) / (np.pi * np.linalg.norm(rhok5) ** 2)) * Balb)
+                C_aek4 = np.dot(rhok4/ np.linalg.norm(rhok4), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
+                C_aik4 = np.dot(-rhok4/np.linalg.norm(rhok4), A4)
 
-            else:
+                if C_aik4 > 0 and C_aek4 > 0 and C_bek > 0:
 
-                Balb = float(0.0)
-                Halb5 = Halb5 + (As * ((C_aek5 * C_bek * C_aik5) / (np.pi * np.linalg.norm(rhok5) ** 2)) * Balb)
+                    Balb = float(1.0)
 
-            C_aek6 = np.dot(rhok6, vetor_terra[k]) / (np.linalg.norm(rhok6) * np.linalg.norm(vetor_terra[k]))
-            C_aik6 = (np.dot(-rhok6, A6)) / (np.linalg.norm(rhok6) * np.linalg.norm(A6))
+                    Halb4 = Halb4 + (As * ((C_aek4 * C_bek * C_aik4) / (np.pi * np.linalg.norm(rhok4) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
 
-            if C_aik6 >= 0 and C_aek6 >= 0 and C_bek >= 0:
+                    Halb4 = Halb4 + (As * ((C_aek4 * C_bek * C_aik4) / (np.pi * np.linalg.norm(rhok4) ** 2)) * Balb)
 
-                Balb = float(1.0)
+            if np.dot(rhok5, vetor_terra[k]) > 0:
 
-                Halb6 = Halb6 + (As * ((C_aek6 * C_bek * C_aik6) / (np.pi * np.linalg.norm(rhok6) ** 2)) * Balb)
-            else:
-                Balb = float(0.0)
+                C_aek5 = np.dot(rhok5/ np.linalg.norm(rhok5), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
+                C_aik5 = np.dot(-rhok5/np.linalg.norm(rhok5), A5)
 
-                Halb6 = Halb6 + (As * ((C_aek6 * C_bek * C_aik6) / (np.pi * np.linalg.norm(rhok6) ** 2)) * Balb)
+                if C_aik5 > 0 and C_aek5 > 0 and C_bek > 0:
+
+                    Balb = float(1.0)
+
+                    Halb5 = Halb5 + (As * ((C_aek5 * C_bek * C_aik5) / (np.pi * np.linalg.norm(rhok5) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
+
+                    Halb5 = Halb5 + (As * ((C_aek5 * C_bek * C_aik5) / (np.pi * np.linalg.norm(rhok5) ** 2)) * Balb)
+
+            if np.dot(rhok6, vetor_terra[k]) > 0:
+
+                C_aek6 = np.dot(rhok6/ np.linalg.norm(rhok6), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
+                C_aik6 = np.dot(-rhok6/np.linalg.norm(rhok6), A6)
+
+                if C_aik6 > 0 and C_aek6 > 0 and C_bek > 0:
+
+                    Balb = float(1.0)
+
+                    Halb6 = Halb6 + (As * ((C_aek6 * C_bek * C_aik6) / (np.pi * np.linalg.norm(rhok6) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
+
+                    Halb6 = Halb6 + (As * ((C_aek6 * C_bek * C_aik6) / (np.pi * np.linalg.norm(rhok6) ** 2)) * Balb)
 
     Qalb1.append(ai * gama * Is * Halb1)
     Halb1 = 0
@@ -365,7 +377,7 @@ for i in tqdm(range(0, len(vetor_posicao), 1), colour='green'):
     Qalb4.append(ai * gama * Is * Halb4)
     Halb4 = 0
 
-    Qalb5.append( ai * gama * Is * Halb5)
+    Qalb5.append(ai * gama * Is * Halb5)
     Halb5 = 0
 
     Qalb6.append(ai * gama * Is * Halb6)
@@ -375,7 +387,7 @@ for i in tqdm(range(0, len(vetor_posicao), 1), colour='green'):
 ''' Radiacao da terra '''
 print('Calculando radiacao da terra')
 
-hrad = []
+
 Qrad1 = []
 Qrad2 = []
 Qrad3 = []
@@ -388,115 +400,124 @@ Hrad3 = 0
 Hrad4 = 0
 Hrad5 = 0
 Hrad6 = 0
-
-
 for i in tqdm(range(0, len(vetor_posicao), 1), colour='cyan'):
-    A1 = [(Posicao_orientacao.iloc[i, 9]), (Posicao_orientacao.iloc[i, 10]), (Posicao_orientacao.iloc[i, 11])]
-    A2 = [(Posicao_orientacao.iloc[i, 12]), (Posicao_orientacao.iloc[i, 13]), (Posicao_orientacao.iloc[i, 14])]
-    A3 = [(Posicao_orientacao.iloc[i, 15]), (Posicao_orientacao.iloc[i, 16]), (Posicao_orientacao.iloc[i, 17])]
-    A4 = [(Posicao_orientacao.iloc[i, 18]), (Posicao_orientacao.iloc[i, 19]), (Posicao_orientacao.iloc[i, 20])]
-    A5 = [(Posicao_orientacao.iloc[i, 21]), (Posicao_orientacao.iloc[i, 22]), (Posicao_orientacao.iloc[i, 23])]
-    A6 = [(Posicao_orientacao.iloc[i, 24]), (Posicao_orientacao.iloc[i, 25]), (Posicao_orientacao.iloc[i, 26])]
+
+    A1 = np.array(
+        [(Posicao_orientacao.iloc[i, 9]), (Posicao_orientacao.iloc[i, 10]), (Posicao_orientacao.iloc[i, 11])])
+    A2 = np.array(
+        [(Posicao_orientacao.iloc[i, 12]), (Posicao_orientacao.iloc[i, 13]), (Posicao_orientacao.iloc[i, 14])])
+    A3 = np.array(
+        [(Posicao_orientacao.iloc[i, 15]), (Posicao_orientacao.iloc[i, 16]), (Posicao_orientacao.iloc[i, 17])])
+    A4 = np.array(
+        [(Posicao_orientacao.iloc[i, 18]), (Posicao_orientacao.iloc[i, 19]), (Posicao_orientacao.iloc[i, 20])])
+    A5 = np.array(
+        [(Posicao_orientacao.iloc[i, 21]), (Posicao_orientacao.iloc[i, 22]), (Posicao_orientacao.iloc[i, 23])])
+    A6 = np.array(
+        [(Posicao_orientacao.iloc[i, 24]), (Posicao_orientacao.iloc[i, 25]), (Posicao_orientacao.iloc[i, 26])])
+
 
     for k in range(0, len(vetor_terra), 1):
 
-        TETA = np.arccos(Raio_terra/np.linalg.norm(vetor_posicao[i]))
-
-        A = np.arccos(np.dot(vetor_posicao[i], vetor_terra[k])/(np.linalg.norm(vetor_posicao[i]) * np.linalg.norm(vetor_terra[k])))
+        TETA = np.arccos(Raio_terra / np.linalg.norm(vetor_posicao[i]))
+        A = np.arccos(np.dot(vetor_posicao[i], vetor_terra[k]) / (np.linalg.norm(vetor_posicao[i]) * np.linalg.norm(vetor_terra[k])))
 
         if TETA > A > 0:
+            #rho = (-np.array(vetor_posicao[i]) + np.array(vetor_terra[k])) + A1
+            Rhok1 = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
+            Rhok2 = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
+            Rhok3 = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
+            Rhok4 = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
+            Rhok5 = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
+            Rhok6 = (np.array(vetor_posicao[i]) - np.array(vetor_terra[k]))
 
-            Rhok1 = vetor_posicao[i] - vetor_terra[k] + A1
-            Rhok2 = vetor_posicao[i] - vetor_terra[k] + A2
-            Rhok3 = vetor_posicao[i] - vetor_terra[k] + A3
-            Rhok4 = vetor_posicao[i] - vetor_terra[k] + A4
-            Rhok5 = vetor_posicao[i] - vetor_terra[k] + A5
-            Rhok6 = vetor_posicao[i] - vetor_terra[k] + A6
+            if np.dot(Rhok1, vetor_terra[k]) > 0:
 
-            C_aek1 = np.dot(Rhok1, vetor_terra[k]) / (np.linalg.norm(Rhok1) * np.linalg.norm(vetor_terra[k]))
-            C_aik1 = (np.dot(-Rhok1, A1)) / (np.linalg.norm(Rhok1) * np.linalg.norm(A1))
+                C_aek1 = np.dot(Rhok1/np.linalg.norm(Rhok1), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
+                C_aik1 = np.dot(-Rhok1/np.linalg.norm(Rhok1), A1)
+                if C_aik1 > 0 and C_aek1 > 0:
 
-            if C_aik1 > 0 and C_aek1 > 0:
+                    Balb = float(1.0)
 
-                Balb = float(1.0)
-                Hrad1 = Hrad1 + (C_aek1 * C_aik1)*(As / (np.pi * np.linalg.norm(Rhok1) ** 2)) * Balb
-                hrad.append(Hrad1)
-                '''print(As)
-                print(C_aek1)
-                print(C_aik1)
-                print(np.linalg.norm(Rhok1))
-                print(Rhok1)
-                print((C_aek1 * C_aik1)*(As / (np.pi * np.linalg.norm(Rhok1) ** 2)) * Balb)
-                print(Hrad1)'''
-            else:
-                Balb = float(0.0)
+                    Hrad1 = Hrad1 + (As * ((C_aek1 * C_aik1) / (np.pi * np.linalg.norm(Rhok1) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
 
-                Hrad1 = Hrad1 + (As * ((C_aek1 * C_aik1) / (np.pi * np.linalg.norm(Rhok1) ** 2)) * Balb)
+                    Hrad1 = Hrad1 + (As * ((C_aek1 * C_aik1) / (np.pi * np.linalg.norm(Rhok1) ** 2)) * Balb)
 
-            C_aek2 = np.dot(Rhok2, vetor_terra[k]) / (np.linalg.norm(Rhok2) * np.linalg.norm(vetor_terra[k]))
-            C_aik2 = (np.dot(-Rhok2, A2)) / (np.linalg.norm(Rhok2) * np.linalg.norm(A2))
+            if np.dot(Rhok2, vetor_terra[k]) > 0:
 
-            if C_aik2 >= 0 and C_aek2 >= 0:
+                C_aek2 = np.dot(Rhok2/ np.linalg.norm(Rhok2), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
+                C_aik2 = np.dot(-Rhok2/np.linalg.norm(Rhok2), A2)
 
-                Balb = float(1.0)
+                if C_aik2 > 0 and C_aek2 > 0:
 
-                Hrad2 = Hrad2 + (As * ((C_aek2 * C_aik2) / (np.pi * np.linalg.norm(Rhok2) ** 2)) * Balb)
-            else:
-                Balb = float(0.0)
+                    Balb = float(1.0)
 
-                Hrad2 = Hrad2 + (As * ((C_aek2 * C_aik2) / (np.pi * np.linalg.norm(Rhok2) ** 2)) * Balb)
+                    Hrad2 = Hrad2 + (As * ((C_aek2 * C_aik2) / (np.pi * np.linalg.norm(Rhok2) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
 
-            C_aek3 = np.dot(Rhok3, vetor_terra[k]) / (np.linalg.norm(Rhok3) * np.linalg.norm(vetor_terra[k]))
-            C_aik3 = (np.dot(-Rhok3, A3)) / (np.linalg.norm(Rhok3) * np.linalg.norm(A3))
+                    Hrad2 = Hrad2 + (As * ((C_aek2 * C_aik2) / (np.pi * np.linalg.norm(Rhok2) ** 2)) * Balb)
 
-            if C_aik3 >= 0 and C_aek3 >= 0:
+            if np.dot(Rhok3, vetor_terra[k]) > 0:
 
-                Balb = float(1.0)
+                C_aek3 = np.dot(Rhok3/ np.linalg.norm(Rhok3), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
+                C_aik3 = np.dot(-Rhok3/np.linalg.norm(Rhok3), A3)
 
-                Hrad3 = Hrad3 + (As * ((C_aek3 * C_aik3) / (np.pi * np.linalg.norm(Rhok3) ** 2)) * Balb)
-            else:
-                Balb = float(0.0)
+                if C_aik3 > 0 and C_aek3 > 0:
 
-                Hrad3 = Hrad3 + (As * ((C_aek3 * C_aik3) / (np.pi * np.linalg.norm(Rhok3) ** 2)) * Balb)
+                    Balb = float(1.0)
 
-            C_aek4 = np.dot(Rhok4, vetor_terra[k]) / (np.linalg.norm(Rhok4) * np.linalg.norm(vetor_terra[k]))
-            C_aik4 = (np.dot(-Rhok4, A4)) / (np.linalg.norm(Rhok4) * np.linalg.norm(A4))
+                    Hrad3 = Hrad3 + (As * ((C_aek3 * C_aik3) / (np.pi * np.linalg.norm(Rhok3) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
 
-            if C_aik4 >= 0 and C_aek4 >= 0:
+                    Hrad3 = Hrad3 + (As * ((C_aek3 * C_aik3) / (np.pi * np.linalg.norm(Rhok3) ** 2)) * Balb)
 
-                Balb = float(1.0)
+            if np.dot(Rhok4, vetor_terra[k]) > 0:
 
-                Hrad4 = Hrad4 + (As * ((C_aek4 * C_aik4) / (np.pi * np.linalg.norm(Rhok4) ** 2)) * Balb)
-            else:
-                Balb = float(0.0)
+                C_aek4 = np.dot(Rhok4/ np.linalg.norm(Rhok4), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
+                C_aik4 = np.dot(-Rhok4/np.linalg.norm(Rhok4), A4)
 
-                Hrad4 = Hrad4 + (As * ((C_aek4 * C_aik4) / (np.pi * np.linalg.norm(Rhok4) ** 2)) * Balb)
+                if C_aik4 > 0 and C_aek4 > 0:
 
-            C_aek5 = np.dot(Rhok5, vetor_terra[k]) / (np.linalg.norm(Rhok5) * np.linalg.norm(vetor_terra[k]))
-            C_aik5 = (np.dot(-Rhok5, A5)) / (np.linalg.norm(Rhok5) * np.linalg.norm(A5))
+                    Balb = float(1.0)
 
-            if C_aik5 >= 0 and C_aek5 >= 0:
+                    Hrad4 = Hrad4 + (As * ((C_aek4 * C_aik4) / (np.pi * np.linalg.norm(Rhok4) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
 
-                Balb = float(1.0)
+                    Hrad4 = Hrad4 + (As * ((C_aek4 * C_aik4) / (np.pi * np.linalg.norm(Rhok4) ** 2)) * Balb)
 
-                Hrad5 = Hrad5 + (As * ((C_aek5 * C_aik5) / (np.pi * np.linalg.norm(Rhok5) ** 2)) * Balb)
-            else:
-                Balb = float(0.0)
+            if np.dot(Rhok5, vetor_terra[k]) > 0:
 
-                Hrad5 = Hrad5 + (As * ((C_aek5 * C_aik5) / (np.pi * np.linalg.norm(Rhok5) ** 2)) * Balb)
+                C_aek5 = np.dot(Rhok5/ np.linalg.norm(Rhok5), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
+                C_aik5 = np.dot(-Rhok5/np.linalg.norm(Rhok5), A5)
 
-            C_aek6 = np.dot(Rhok6, vetor_terra[k]) / (np.linalg.norm(Rhok6) * np.linalg.norm(vetor_terra[k]))
-            C_aik6 = (np.dot(-Rhok6, A6)) / (np.linalg.norm(Rhok6) * np.linalg.norm(A6))
+                if C_aik5 > 0 and C_aek5 > 0:
 
-            if C_aik6 >= 0 and C_aek6 >= 0:
+                    Balb = float(1.0)
 
-                Balb = float(1.0)
+                    Hrad5 = Hrad5 + (As * ((C_aek5 * C_aik5) / (np.pi * np.linalg.norm(Rhok5) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
 
-                Hrad6 = Hrad6 + (As* ((C_aek6 * C_aik6) / (np.pi * np.linalg.norm(Rhok6) ** 2)) * Balb)
-            else:
-                Balb = float(0.0)
+                    Hrad5 = Hrad5 + (As * ((C_aek5 * C_aik5) / (np.pi * np.linalg.norm(Rhok5) ** 2)) * Balb)
 
-                Hrad6 = Hrad6 + (As * ((C_aek6 * C_aik6) / (np.pi * np.linalg.norm(Rhok6) ** 2)) * Balb)
+            if np.dot(Rhok6, vetor_terra[k]) > 0:
+
+                C_aek6 = np.dot(Rhok6/np.linalg.norm(Rhok6), vetor_terra[k]/np.linalg.norm(vetor_terra[k]))
+                C_aik6 = np.dot(-Rhok6/np.linalg.norm(Rhok6), A6)
+
+                if C_aik6 > 0 and C_aek6 > 0:
+
+                    Balb = float(1.0)
+
+                    Hrad6 = Hrad6 + (As * ((C_aek6 * C_aik6) / (np.pi * np.linalg.norm(Rhok6) ** 2)) * Balb)
+                else:
+                    Balb = float(0.0)
+
+                    Hrad6 = Hrad6 + (As * ((C_aek6 * C_aik6) / (np.pi * np.linalg.norm(Rhok6) ** 2)) * Balb)
 
     Qrad1.append(e * Ir * (Hrad1))
     Hrad1 = 0
@@ -515,26 +536,24 @@ for i in tqdm(range(0, len(vetor_posicao), 1), colour='cyan'):
 
     Qrad6.append(e * Ir * (Hrad6))
     Hrad6 = 0
-print(len(hrad))
+
 rad_sol = []
 for i in range(0, len(Qs1), 1):
     rad_sol.append([Qs1[i], Qs2[i], Qs3[i], Qs4[i], Qs5[i], Qs6[i]])
-
+print(len(rad_sol))
 Q_sol = pd.DataFrame(rad_sol, columns=['Qs1', 'Qs2', 'Qs3', 'Qs4', 'Qs5', 'Qs6'])
 
 rad_alb = []
 for i in range(0, len(Qalb1), 1):
     rad_alb.append([Qalb1[i], Qalb2[i], Qalb3[i], Qalb4[i], Qalb5[i], Qalb6[i]])
 Q_alb = pd.DataFrame(rad_alb, columns=['Qalb1', 'Qalb2', 'Qalb3', 'Qalb4', 'Qalb5', 'Qalb6'])
-
+print(len(rad_alb))
 rad_terra = []
 for i in range(0, len(Qrad1), 1):
     rad_terra.append([Qrad1[i], Qrad2[i], Qrad3[i], Qrad4[i], Qrad5[i], Qrad6[i]])
 Q_terra = pd.DataFrame(rad_terra, columns=['Qrad1', 'Qrad2', 'Qrad3', 'Qrad4', 'Qrad5', 'Qrad6'])
-
+print(len(rad_terra))
 print('Terminando calculo')
-
-
 
 T = np.linspace(0, len(vetor_posicao), len(vetor_posicao))
 plt.xlabel("Ponto da orbita")
